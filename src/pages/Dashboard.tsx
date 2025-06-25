@@ -330,6 +330,40 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Device Models Summary - Worker gets limited view */}
+        {isWorker && (
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">
+                Supported Device Models
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Device models you can work with (+ custom models)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  "iPhone 15 Pro",
+                  "iPhone 14",
+                  "Samsung S24",
+                  "OnePlus 12",
+                  "Google Pixel",
+                  "Others",
+                ].map((model) => (
+                  <div
+                    key={model}
+                    className="flex items-center gap-2 p-2 rounded-lg border"
+                  >
+                    <Smartphone className="h-4 w-4 text-primary" />
+                    <span className="text-sm">{model}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Quick Actions */}
         <Card>
           <CardHeader className="pb-4">

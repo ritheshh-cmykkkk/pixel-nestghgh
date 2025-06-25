@@ -46,7 +46,7 @@ const transactionSchema = z
     customerName: z.string().min(1, "Customer name is required"),
     phoneNumber: z.string().min(10, "Valid phone number is required"),
     deviceModel: z.string().min(1, "Device model is required"),
-    imeiNumber: z.string().optional(),
+    customDeviceModel: z.string().optional(),
     problemDescription: z.string().optional(),
 
     // Step 2: Repair Info
@@ -76,11 +76,15 @@ const transactionSchema = z
       if (data.repairType === "others" && !data.customRepairType?.trim()) {
         return false;
       }
+      // If device model is "others", custom device model is required
+      if (data.deviceModel === "others" && !data.customDeviceModel?.trim()) {
+        return false;
+      }
       return true;
     },
     {
-      message: "Custom repair type is required when 'Others' is selected",
-      path: ["customRepairType"],
+      message: "Custom type is required when 'Others' is selected",
+      path: ["customRepairType", "customDeviceModel"],
     },
   );
 
@@ -111,6 +115,7 @@ const deviceModels = [
   "Google Pixel 7",
   "Xiaomi 14",
   "Realme GT 6",
+  "others",
 ];
 
 export function MultiStepTransactionForm() {
@@ -169,6 +174,10 @@ export function MultiStepTransactionForm() {
     switch (currentStep) {
       case 1:
         fieldsToValidate = ["customerName", "phoneNumber", "deviceModel"];
+        // If "others" is selected, also validate custom device model
+        if (watchedValues.deviceModel === "others") {
+          fieldsToValidate.push("customDeviceModel");
+        }
         break;
       case 2:
         fieldsToValidate = [
@@ -207,11 +216,15 @@ export function MultiStepTransactionForm() {
   };
 
   const onSubmit = (data: TransactionFormData) => {
-    // If "others" is selected, use the custom repair type
+    // If "others" is selected, use the custom types
     const finalData = {
       ...data,
       repairType:
         data.repairType === "others" ? data.customRepairType : data.repairType,
+      deviceModel:
+        data.deviceModel === "others"
+          ? data.customDeviceModel
+          : data.deviceModel,
     };
 
     console.log("Transaction Data:", finalData);
@@ -320,7 +333,7 @@ export function MultiStepTransactionForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="deviceModel">{t("device-model")} *</Label>
                     <Select
@@ -333,7 +346,7 @@ export function MultiStepTransactionForm() {
                       <SelectContent>
                         {deviceModels.map((model) => (
                           <SelectItem key={model} value={model}>
-                            {model}
+                            {model === "others" ? "Others (Custom)" : model}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -343,16 +356,26 @@ export function MultiStepTransactionForm() {
                         {errors.deviceModel.message}
                       </p>
                     )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="imeiNumber">IMEI Number</Label>
-                    <Input
-                      id="imeiNumber"
-                      placeholder="Enter IMEI number"
-                      {...register("imeiNumber")}
-                      className="h-12"
-                    />
+                    {/* Custom device model input when "others" is selected */}
+                    {watchedValues.deviceModel === "others" && (
+                      <div className="space-y-2 mt-3">
+                        <Label htmlFor="customDeviceModel">
+                          Custom Device Model *
+                        </Label>
+                        <Input
+                          id="customDeviceModel"
+                          placeholder="Enter custom device model"
+                          {...register("customDeviceModel")}
+                          className="h-12"
+                        />
+                        {errors.customDeviceModel && (
+                          <p className="text-sm text-destructive">
+                            {errors.customDeviceModel.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -665,7 +688,9 @@ export function MultiStepTransactionForm() {
                       <div>
                         <p className="text-sm text-muted-foreground">Device</p>
                         <p className="font-medium">
-                          {watchedValues.deviceModel || "N/A"}
+                          {watchedValues.deviceModel === "others"
+                            ? watchedValues.customDeviceModel || "Custom Device"
+                            : watchedValues.deviceModel || "N/A"}
                         </p>
                       </div>
                       <div>
