@@ -88,8 +88,15 @@ const App = () => (
                   element={<EditTransaction />}
                 />
 
-                {/* Inventory routes */}
-                <Route path="/inventory" element={<Inventory />} />
+                {/* Inventory routes - Admin only */}
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Inventory />
+                    </ProtectedRoute>
+                  }
+                />
 
                 {/* Supplier routes */}
                 <Route path="/suppliers" element={<Suppliers />} />

@@ -37,7 +37,7 @@ const mobileNavigationItems = [
     name: "inventory",
     href: "/inventory",
     icon: Package,
-    allowedRoles: ["admin", "worker"],
+    allowedRoles: ["admin"], // Only admin can access inventory
   },
   {
     name: "bills",

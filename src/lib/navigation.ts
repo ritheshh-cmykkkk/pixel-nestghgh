@@ -43,7 +43,7 @@ export const navigationItems: NavigationItem[] = [
     name: "inventory",
     href: "/inventory",
     icon: Package,
-    allowedRoles: ["admin", "worker"],
+    allowedRoles: ["admin"], // Only admin can access inventory
   },
   {
     name: "suppliers",
