@@ -97,12 +97,12 @@ const translations = {
     "camera-repair": "Camera Repair",
     "water-damage": "Water Damage",
     "software-issue": "Software Issue",
+    others: "Others",
 
     // Payment methods
     cash: "Cash",
     upi: "UPI",
     card: "Card",
-    "bank-transfer": "Bank Transfer",
   },
   te: {
     // Navigation
@@ -163,7 +163,7 @@ const translations = {
     login: "లాగిన్",
     logout: "లాగ్అవుట్",
     email: "ఈమెయిల్",
-    password: "పాస్‌వర్డ్",
+    password: "పాస్‌వ���్డ్",
     "remember-me": "నన్ను గుర్తుంచుకో",
     "forgot-password": "పాస్‌వర్డ్ మర్చిపోయారా?",
     "sign-in": "లాగిన్ అవ్వండి",
@@ -186,12 +186,12 @@ const translations = {
     "camera-repair": "కెమెరా రిపేర్",
     "water-damage": "నీటి నష్టం",
     "software-issue": "సాఫ్ట్‌వేర్ సమస్య",
+    others: "ఇతరులు",
 
     // Payment methods
     cash: "నగదు",
     upi: "UPI",
     card: "కార్డ్",
-    "bank-transfer": "బ్యాంక్ బదిలీ",
   },
 };
 

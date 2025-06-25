@@ -22,51 +22,71 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import {
   User,
-  Smartphone,
   Wrench,
   Package,
-  Plus,
-  Trash2,
-  Calculator,
+  Smartphone,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  CreditCard,
+  Phone,
+  Calendar,
+  DollarSign,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const transactionSchema = z.object({
-  // Step 1: Customer Details
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-  deviceModel: z.string().min(1, "Device model is required"),
+const transactionSchema = z
+  .object({
+    // Step 1: Customer & Device Details
+    customerName: z.string().min(1, "Customer name is required"),
+    phoneNumber: z.string().min(10, "Valid phone number is required"),
+    deviceModel: z.string().min(1, "Device model is required"),
+    customDeviceModel: z.string().optional(),
+    problemDescription: z.string().optional(),
 
-  // Step 2: Repair Info
-  repairType: z.string().min(1, "Repair type is required"),
-  repairCost: z.number().min(0, "Cost must be positive"),
-  paymentMethod: z.enum(["cash", "upi", "card", "bank-transfer"]),
-  amountGiven: z.number().min(0, "Amount must be positive"),
+    // Step 2: Repair Info
+    repairType: z.string().min(1, "Repair type is required"),
+    customRepairType: z.string().optional(),
+    repairCost: z.number().min(0, "Cost must be positive"),
+    warrantyPeriod: z.number().min(0, "Warranty period must be valid"),
+    paymentMethod: z.enum(["cash", "upi", "card"]),
+    amountGiven: z.number().min(0, "Amount must be positive"),
 
-  // Step 3: Parts & Supplier (optional)
-  requiresParts: z.boolean().default(false),
-  supplier: z.string().optional(),
-  parts: z
-    .array(
-      z.object({
-        name: z.string(),
-        cost: z.number(),
-        quantity: z.number(),
-      }),
-    )
-    .default([]),
+    // Step 3: Parts & Supplier Info
+    requiresParts: z.boolean(),
+    supplierName: z.string().optional(),
+    supplierContact: z.string().optional(),
+    partsDescription: z.string().optional(),
+    partsCost: z.number().min(0).optional(),
 
-  // Step 4: Additional Details
-  freeGlass: z.boolean().default(false),
-  remarks: z.string().optional(),
-  status: z.enum(["pending", "in-progress", "completed"]).default("pending"),
-});
+    // Step 4: Additional Details
+    expectedCompletion: z.string().optional(),
+    priority: z.enum(["low", "medium", "high"]),
+    notes: z.string().optional(),
+    freeGlass: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      // If repair type is "others", custom repair type is required
+      if (data.repairType === "others" && !data.customRepairType?.trim()) {
+        return false;
+      }
+      // If device model is "others", custom device model is required
+      if (data.deviceModel === "others" && !data.customDeviceModel?.trim()) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Custom type is required when 'Others' is selected",
+      path: ["customRepairType", "customDeviceModel"],
+    },
+  );
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
 
@@ -78,6 +98,7 @@ const repairTypes = [
   "camera-repair",
   "water-damage",
   "software-issue",
+  "others",
 ];
 
 const deviceModels = [
@@ -88,52 +109,33 @@ const deviceModels = [
   "iPhone 13",
   "Samsung Galaxy S24",
   "Samsung Galaxy S23",
-  "Samsung Galaxy A54",
-  "Google Pixel 8",
   "OnePlus 12",
+  "OnePlus 11",
+  "Google Pixel 8",
+  "Google Pixel 7",
   "Xiaomi 14",
-  "Other",
+  "Realme GT 6",
+  "others",
 ];
 
-const suppliers = [
-  "TechParts Ltd",
-  "Mobile Components Inc",
-  "Repair Supply Co",
-  "Digital Parts Hub",
-  "Other",
-];
-
-interface MultiStepTransactionFormProps {
-  onSubmit: (data: TransactionFormData) => void;
-  onCancel: () => void;
-  initialData?: Partial<TransactionFormData>;
-}
-
-export function MultiStepTransactionForm({
-  onSubmit,
-  onCancel,
-  initialData,
-}: MultiStepTransactionFormProps) {
+export function MultiStepTransactionForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [parts, setParts] = useState<
-    Array<{ name: string; cost: number; quantity: number }>
-  >([]);
   const { t } = useLanguage();
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
-    formState: { errors },
+    watch,
     trigger,
+    formState: { errors },
   } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       requiresParts: false,
+      priority: "medium",
       freeGlass: false,
-      status: "pending",
-      ...initialData,
+      warrantyPeriod: 30,
     },
   });
 
@@ -172,6 +174,10 @@ export function MultiStepTransactionForm({
     switch (currentStep) {
       case 1:
         fieldsToValidate = ["customerName", "phoneNumber", "deviceModel"];
+        // If "others" is selected, also validate custom device model
+        if (watchedValues.deviceModel === "others") {
+          fieldsToValidate.push("customDeviceModel");
+        }
         break;
       case 2:
         fieldsToValidate = [
@@ -180,18 +186,26 @@ export function MultiStepTransactionForm({
           "paymentMethod",
           "amountGiven",
         ];
+        // If "others" is selected, also validate custom repair type
+        if (watchedValues.repairType === "others") {
+          fieldsToValidate.push("customRepairType");
+        }
         break;
       case 3:
-        // No required fields in step 3
-        break;
-      case 4:
-        // All remaining fields
+        fieldsToValidate = requiresParts
+          ? ["supplierName", "supplierContact"]
+          : [];
         break;
     }
 
     const isValid = await trigger(fieldsToValidate);
-    if (isValid && currentStep < 4) {
+    if (!isValid) return;
+
+    if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
+    } else {
+      // Submit form
+      handleSubmit(onSubmit)();
     }
   };
 
@@ -201,90 +215,89 @@ export function MultiStepTransactionForm({
     }
   };
 
-  const addPart = () => {
-    const newPart = { name: "", cost: 0, quantity: 1 };
-    setParts([...parts, newPart]);
-  };
-
-  const removePart = (index: number) => {
-    setParts(parts.filter((_, i) => i !== index));
-  };
-
-  const updatePart = (index: number, field: string, value: string | number) => {
-    const updatedParts = parts.map((part, i) => {
-      if (i === index) {
-        return { ...part, [field]: value };
-      }
-      return part;
-    });
-    setParts(updatedParts);
-    setValue("parts", updatedParts);
-  };
-
-  const onFormSubmit = (data: TransactionFormData) => {
+  const onSubmit = (data: TransactionFormData) => {
+    // If "others" is selected, use the custom types
     const finalData = {
       ...data,
-      parts: requiresParts ? parts : [],
+      repairType:
+        data.repairType === "others" ? data.customRepairType : data.repairType,
+      deviceModel:
+        data.deviceModel === "others"
+          ? data.customDeviceModel
+          : data.deviceModel,
     };
-    onSubmit(finalData);
-    toast({
-      title: "Transaction Created",
-      description: "New repair transaction has been added successfully.",
-    });
+
+    console.log("Transaction Data:", finalData);
+    // Here you would typically send the data to your backend
+    alert("Transaction created successfully!");
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Progress Steps */}
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-center mb-2">
+          {t("new-transaction")}
+        </h2>
+        <p className="text-muted-foreground text-center">
+          Create a new repair transaction with complete details
+        </p>
+      </div>
+
+      {/* Progress indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          {steps.map((step, index) => {
-            const stepNumber = index + 1;
-            const isActive = stepNumber === currentStep;
-            const isCompleted = stepNumber < currentStep;
-
-            return (
-              <div key={stepNumber} className="flex items-center">
+          {steps.map((step, index) => (
+            <div
+              key={index}
+              className={`flex items-center ${
+                index < steps.length - 1 ? "flex-1" : ""
+              }`}
+            >
+              <div className="relative flex flex-col items-center">
                 <div
-                  className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
-                    isActive && "step-active border-primary",
-                    isCompleted && "step-completed border-success",
-                    !isActive && !isCompleted && "step-inactive border-muted",
-                  )}
+                  className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
+                    currentStep > index + 1
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : currentStep === index + 1
+                        ? "border-primary text-primary"
+                        : "border-muted-foreground text-muted-foreground"
+                  }`}
                 >
-                  {isCompleted ? (
-                    <span className="text-success-foreground">✓</span>
+                  {currentStep > index + 1 ? (
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <step.icon className="h-5 w-5" />
+                    <step.icon className="w-5 h-5" />
                   )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      "h-0.5 w-16 mx-2 transition-colors",
-                      isCompleted ? "bg-success" : "bg-muted",
-                    )}
-                  />
-                )}
+                <div className="mt-2 text-center">
+                  <p className="text-sm font-medium">{step.title}</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">
+                    {step.description}
+                  </p>
+                </div>
               </div>
-            );
-          })}
-        </div>
-        <div className="text-center">
-          <h2 className="text-xl font-semibold">
-            {steps[currentStep - 1].title}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {steps[currentStep - 1].description}
-          </p>
+              {index < steps.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 mx-4 ${
+                    currentStep > index + 1 ? "bg-primary" : "bg-border"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onFormSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
-          <CardContent className="p-6">
-            {/* Step 1: Customer Details */}
+          <CardHeader>
+            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
+            <CardDescription>
+              {steps[currentStep - 1].description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Step 1: Customer & Device Details */}
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -292,7 +305,7 @@ export function MultiStepTransactionForm({
                     <Label htmlFor="customerName">{t("customer-name")} *</Label>
                     <Input
                       id="customerName"
-                      placeholder="John Smith"
+                      placeholder="Enter customer name"
                       {...register("customerName")}
                       className="h-12"
                     />
@@ -308,7 +321,7 @@ export function MultiStepTransactionForm({
                     <Input
                       id="phoneNumber"
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="Enter phone number"
                       {...register("phoneNumber")}
                       className="h-12"
                     />
@@ -320,28 +333,62 @@ export function MultiStepTransactionForm({
                   </div>
                 </div>
 
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="deviceModel">{t("device-model")} *</Label>
+                    <Select
+                      onValueChange={(value) => setValue("deviceModel", value)}
+                      defaultValue={watchedValues.deviceModel}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select device model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {deviceModels.map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model === "others" ? "Others (Custom)" : model}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.deviceModel && (
+                      <p className="text-sm text-destructive">
+                        {errors.deviceModel.message}
+                      </p>
+                    )}
+
+                    {/* Custom device model input when "others" is selected */}
+                    {watchedValues.deviceModel === "others" && (
+                      <div className="space-y-2 mt-3">
+                        <Label htmlFor="customDeviceModel">
+                          Custom Device Model *
+                        </Label>
+                        <Input
+                          id="customDeviceModel"
+                          placeholder="Enter custom device model"
+                          {...register("customDeviceModel")}
+                          className="h-12"
+                        />
+                        {errors.customDeviceModel && (
+                          <p className="text-sm text-destructive">
+                            {errors.customDeviceModel.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="deviceModel">{t("device-model")} *</Label>
-                  <Select
-                    onValueChange={(value) => setValue("deviceModel", value)}
-                    defaultValue={watchedValues.deviceModel}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select device model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {deviceModels.map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.deviceModel && (
-                    <p className="text-sm text-destructive">
-                      {errors.deviceModel.message}
-                    </p>
-                  )}
+                  <Label htmlFor="problemDescription">
+                    Problem Description
+                  </Label>
+                  <Textarea
+                    id="problemDescription"
+                    placeholder="Describe the device problem"
+                    {...register("problemDescription")}
+                    className="min-h-[100px]"
+                  />
                 </div>
               </div>
             )}
@@ -362,7 +409,7 @@ export function MultiStepTransactionForm({
                       <SelectContent>
                         {repairTypes.map((type) => (
                           <SelectItem key={type} value={type}>
-                            {t(type)}
+                            {type === "others" ? "Others (Custom)" : t(type)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -372,6 +419,26 @@ export function MultiStepTransactionForm({
                         {errors.repairType.message}
                       </p>
                     )}
+
+                    {/* Custom repair type input when "others" is selected */}
+                    {watchedValues.repairType === "others" && (
+                      <div className="space-y-2 mt-3">
+                        <Label htmlFor="customRepairType">
+                          Custom Repair Type *
+                        </Label>
+                        <Input
+                          id="customRepairType"
+                          placeholder="Enter custom repair type"
+                          {...register("customRepairType")}
+                          className="h-12"
+                        />
+                        {errors.customRepairType && (
+                          <p className="text-sm text-destructive">
+                            {errors.customRepairType.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -379,8 +446,7 @@ export function MultiStepTransactionForm({
                     <Input
                       id="repairCost"
                       type="number"
-                      step="0.01"
-                      placeholder="0.00"
+                      placeholder="0"
                       {...register("repairCost", { valueAsNumber: true })}
                       className="h-12"
                     />
@@ -392,16 +458,29 @@ export function MultiStepTransactionForm({
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="warrantyPeriod">Warranty (Days)</Label>
+                    <Input
+                      id="warrantyPeriod"
+                      type="number"
+                      placeholder="30"
+                      {...register("warrantyPeriod", { valueAsNumber: true })}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   <Label>{t("payment-method")} *</Label>
                   <RadioGroup
                     onValueChange={(value) =>
                       setValue("paymentMethod", value as any)
                     }
                     defaultValue={watchedValues.paymentMethod}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
                   >
-                    {["cash", "upi", "card", "bank-transfer"].map((method) => (
+                    {["cash", "upi", "card"].map((method) => (
                       <div
                         key={method}
                         className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent"
@@ -429,8 +508,7 @@ export function MultiStepTransactionForm({
                     <Input
                       id="amountGiven"
                       type="number"
-                      step="0.01"
-                      placeholder="0.00"
+                      placeholder="0"
                       {...register("amountGiven", { valueAsNumber: true })}
                       className="h-12"
                     />
@@ -442,11 +520,10 @@ export function MultiStepTransactionForm({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>{t("change-returned")}</Label>
-                    <div className="h-12 flex items-center px-3 border rounded-lg bg-muted">
-                      <Calculator className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span className="font-semibold">
-                        ₹{changeReturned.toFixed(2)}
+                    <Label>Change to Return</Label>
+                    <div className="h-12 px-3 border rounded-md bg-muted flex items-center">
+                      <span className="text-lg font-semibold">
+                        ₹{changeReturned.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -454,125 +531,82 @@ export function MultiStepTransactionForm({
               </div>
             )}
 
-            {/* Step 3: Parts & Supplier */}
+            {/* Step 3: Parts & Supplier Info */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="requiresParts">
-                      Requires Parts Purchase
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Toggle if this repair needs additional parts
-                    </p>
-                  </div>
-                  <Switch
+                <div className="flex items-center space-x-2">
+                  <Checkbox
                     id="requiresParts"
                     checked={requiresParts}
                     onCheckedChange={(checked) =>
-                      setValue("requiresParts", checked)
+                      setValue("requiresParts", !!checked)
                     }
                   />
+                  <Label htmlFor="requiresParts">
+                    This repair requires additional parts
+                  </Label>
                 </div>
 
                 {requiresParts && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="supplier">Supplier</Label>
-                      <Select
-                        onValueChange={(value) => setValue("supplier", value)}
-                        defaultValue={watchedValues.supplier}
-                      >
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Select supplier" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {suppliers.map((supplier) => (
-                            <SelectItem key={supplier} value={supplier}>
-                              {supplier}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label>Parts List</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={addPart}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Part
-                        </Button>
+                  <div className="space-y-6 p-4 border rounded-lg bg-muted/20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="supplierName">Supplier Name *</Label>
+                        <Input
+                          id="supplierName"
+                          placeholder="Enter supplier name"
+                          {...register("supplierName")}
+                          className="h-12"
+                        />
+                        {errors.supplierName && (
+                          <p className="text-sm text-destructive">
+                            {errors.supplierName.message}
+                          </p>
+                        )}
                       </div>
 
-                      {parts.map((part, index) => (
-                        <Card key={index} className="p-4">
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="md:col-span-2">
-                              <Label>Part Name</Label>
-                              <Input
-                                placeholder="Screen Assembly"
-                                value={part.name}
-                                onChange={(e) =>
-                                  updatePart(index, "name", e.target.value)
-                                }
-                                className="h-10"
-                              />
-                            </div>
-                            <div>
-                              <Label>Quantity</Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={part.quantity}
-                                onChange={(e) =>
-                                  updatePart(
-                                    index,
-                                    "quantity",
-                                    parseInt(e.target.value) || 1,
-                                  )
-                                }
-                                className="h-10"
-                              />
-                            </div>
-                            <div className="flex items-end gap-2">
-                              <div className="flex-1">
-                                <Label>Cost</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="0.00"
-                                  value={part.cost}
-                                  onChange={(e) =>
-                                    updatePart(
-                                      index,
-                                      "cost",
-                                      parseFloat(e.target.value) || 0,
-                                    )
-                                  }
-                                  className="h-10"
-                                />
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={() => removePart(index)}
-                                className="h-10 w-10"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
+                      <div className="space-y-2">
+                        <Label htmlFor="supplierContact">
+                          Supplier Contact *
+                        </Label>
+                        <Input
+                          id="supplierContact"
+                          placeholder="Enter contact information"
+                          {...register("supplierContact")}
+                          className="h-12"
+                        />
+                        {errors.supplierContact && (
+                          <p className="text-sm text-destructive">
+                            {errors.supplierContact.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="partsDescription">
+                          Parts Description
+                        </Label>
+                        <Textarea
+                          id="partsDescription"
+                          placeholder="Describe required parts"
+                          {...register("partsDescription")}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="partsCost">Parts Cost</Label>
+                        <Input
+                          id="partsCost"
+                          type="number"
+                          placeholder="0"
+                          {...register("partsCost", { valueAsNumber: true })}
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -580,94 +614,99 @@ export function MultiStepTransactionForm({
             {/* Step 4: Additional Details */}
             {currentStep === 4 && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="freeGlass">Free Glass Installation</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Complimentary screen protector installation
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="expectedCompletion">
+                      Expected Completion
+                    </Label>
+                    <Input
+                      id="expectedCompletion"
+                      type="date"
+                      {...register("expectedCompletion")}
+                      className="h-12"
+                    />
                   </div>
-                  <Switch
+
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select
+                      onValueChange={(value) =>
+                        setValue("priority", value as any)
+                      }
+                      defaultValue={watchedValues.priority}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Additional Notes</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Any additional notes or instructions"
+                    {...register("notes")}
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
                     id="freeGlass"
                     checked={watchedValues.freeGlass}
                     onCheckedChange={(checked) =>
-                      setValue("freeGlass", checked)
+                      setValue("freeGlass", !!checked)
                     }
                   />
+                  <Label htmlFor="freeGlass">Include free screen guard</Label>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    onValueChange={(value) => setValue("status", value as any)}
-                    defaultValue={watchedValues.status}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">{t("pending")}</SelectItem>
-                      <SelectItem value="in-progress">
-                        {t("in-progress")}
-                      </SelectItem>
-                      <SelectItem value="completed">
-                        {t("completed")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="remarks">Special Remarks</Label>
-                  <Textarea
-                    id="remarks"
-                    placeholder="Any special notes about this repair..."
-                    {...register("remarks")}
-                    rows={4}
-                  />
-                </div>
-
-                {/* Summary */}
-                <Card className="bg-muted/50">
+                {/* Transaction Summary */}
+                <Card className="bg-muted/20">
                   <CardHeader>
                     <CardTitle className="text-lg">
                       Transaction Summary
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-muted-foreground">Customer</p>
+                        <p className="text-sm text-muted-foreground">
+                          Customer
+                        </p>
                         <p className="font-medium">
-                          {watchedValues.customerName}
+                          {watchedValues.customerName || "N/A"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Device</p>
+                        <p className="text-sm text-muted-foreground">Device</p>
                         <p className="font-medium">
-                          {watchedValues.deviceModel}
+                          {watchedValues.deviceModel === "others"
+                            ? watchedValues.customDeviceModel || "Custom Device"
+                            : watchedValues.deviceModel || "N/A"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Repair</p>
+                        <p className="text-sm text-muted-foreground">
+                          Repair Type
+                        </p>
                         <p className="font-medium">
-                          {t(watchedValues.repairType || "")}
+                          {watchedValues.repairType === "others"
+                            ? watchedValues.customRepairType || "Custom Repair"
+                            : t(watchedValues.repairType || "")}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Cost</p>
-                        <p className="font-medium">₹{repairCost.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Payment</p>
+                        <p className="text-sm text-muted-foreground">Cost</p>
                         <p className="font-medium">
-                          {t(watchedValues.paymentMethod || "")}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Change</p>
-                        <p className="font-medium">
-                          ₹{changeReturned.toFixed(2)}
+                          ₹{(watchedValues.repairCost || 0).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -678,27 +717,31 @@ export function MultiStepTransactionForm({
           </CardContent>
         </Card>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
-          <div className="flex gap-2">
-            {currentStep > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep}>
-                {t("back")}
-              </Button>
-            )}
-            <Button type="button" variant="outline" onClick={onCancel}>
-              {t("cancel")}
-            </Button>
-          </div>
+        {/* Navigation buttons */}
+        <div className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Previous
+          </Button>
 
-          <div>
-            {currentStep < 4 ? (
-              <Button type="button" onClick={nextStep}>
-                {t("next")}
-              </Button>
-            ) : (
-              <Button type="submit">{t("finish")}</Button>
-            )}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              Step {currentStep} of {steps.length}
+            </span>
+            <Button
+              type={currentStep === steps.length ? "submit" : "button"}
+              onClick={currentStep === steps.length ? undefined : nextStep}
+              className="flex items-center gap-2"
+            >
+              {currentStep === steps.length ? "Create Transaction" : "Next"}
+              {currentStep < steps.length && <ArrowRight className="w-4 h-4" />}
+            </Button>
           </div>
         </div>
       </form>

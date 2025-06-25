@@ -25,6 +25,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConnectionIndicator } from "@/contexts/ConnectionContext";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { RoleSwitcher } from "@/components/RoleSwitcher";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -149,6 +150,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Role switcher for testing */}
+        <RoleSwitcher />
 
         {/* Profile dropdown */}
         <DropdownMenu>

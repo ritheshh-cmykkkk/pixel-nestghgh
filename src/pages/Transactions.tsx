@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useRole } from "@/hooks/use-role";
 import {
   Card,
   CardContent,
@@ -73,7 +74,7 @@ interface Transaction {
   cost: number;
   profit: number;
   status: "pending" | "in-progress" | "completed" | "delivered";
-  paymentMethod: "cash" | "upi" | "card" | "bank-transfer";
+  paymentMethod: "cash" | "upi" | "card";
   freeGlass: boolean;
 }
 
@@ -127,7 +128,7 @@ const mockTransactions: Transaction[] = [
     cost: 15000,
     profit: 5500,
     status: "completed",
-    paymentMethod: "bank-transfer",
+    paymentMethod: "card",
     freeGlass: true,
   },
   {
@@ -153,12 +154,14 @@ const statusConfig = {
 };
 
 export default function Transactions() {
+  const { permissions, canDeleteTransaction } = useRole();
   const [data, setData] = useState(mockTransactions);
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [showProfits, setShowProfits] = useState(
-    localStorage.getItem("showProfits") === "true",
+    localStorage.getItem("showProfits") === "true" &&
+      permissions.canViewProfits,
   );
   const { t } = useLanguage();
 
@@ -270,52 +273,85 @@ export default function Transactions() {
       columnHelper.display({
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original.id)}
-              >
-                Copy transaction ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to={`/transactions/${row.original.id}/edit`}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit transaction
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => handleDelete(row.original.id)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete transaction
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canDeleteTransaction(row.original.date);
+          const canEdit = permissions.canDeleteTransactions; // Use same permission for edit
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(row.original.id)}
+                >
+                  Copy transaction ID
+                </DropdownMenuItem>
+                {(canEdit || canDelete) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    {canEdit && (
+                      <DropdownMenuItem asChild>
+                        <Link to={`/transactions/${row.original.id}/edit`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit transaction
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete ? (
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(row.original.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete transaction
+                      </DropdownMenuItem>
+                    ) : (
+                      permissions.canDeleteTransactions && (
+                        <DropdownMenuItem
+                          disabled
+                          className="text-muted-foreground"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete (24h limit exceeded)
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
       }),
     ],
     [showProfits, t],
   );
 
   const filteredData = useMemo(() => {
-    return data.filter((transaction) => {
+    let transactions = data.filter((transaction) => {
       const matchesStatus =
         statusFilter === "all" || transaction.status === statusFilter;
       const matchesPayment =
         paymentFilter === "all" || transaction.paymentMethod === paymentFilter;
       return matchesStatus && matchesPayment;
     });
-  }, [data, statusFilter, paymentFilter]);
+
+    // Limit transactions for workers
+    if (
+      permissions.maxTransactionsView &&
+      transactions.length > permissions.maxTransactionsView
+    ) {
+      transactions = transactions.slice(0, permissions.maxTransactionsView);
+    }
+
+    return transactions;
+  }, [data, statusFilter, paymentFilter, permissions.maxTransactionsView]);
 
   const table = useReactTable({
     data: filteredData,
@@ -341,6 +377,7 @@ export default function Transactions() {
   };
 
   const toggleProfits = () => {
+    if (!permissions.canViewProfits) return;
     const newValue = !showProfits;
     setShowProfits(newValue);
     localStorage.setItem("showProfits", newValue.toString());
@@ -364,23 +401,27 @@ export default function Transactions() {
               {t("transactions")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage and track all repair transactions
+              {permissions.maxTransactionsView
+                ? `View recent transactions (limited to ${permissions.maxTransactionsView} entries) • Can delete within 24 hours`
+                : "Manage and track all repair transactions"}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
-              ) : (
-                <Eye className="mr-2 h-4 w-4" />
-              )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
+            {permissions.canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -390,12 +431,14 @@ export default function Transactions() {
               <Download className="mr-2 h-4 w-4" />
               {t("export")}
             </Button>
-            <Link to="/transactions/new">
-              <Button size="sm" className="h-10 sm:h-9">
-                <Plus className="mr-2 h-4 w-4" />
-                {t("new-transaction")}
-              </Button>
-            </Link>
+            {permissions.canDeleteTransactions && (
+              <Link to="/transactions/new">
+                <Button size="sm" className="h-10 sm:h-9">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("new-transaction")}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -436,9 +479,6 @@ export default function Transactions() {
                     <SelectItem value="cash">{t("cash")}</SelectItem>
                     <SelectItem value="upi">{t("upi")}</SelectItem>
                     <SelectItem value="card">{t("card")}</SelectItem>
-                    <SelectItem value="bank-transfer">
-                      {t("bank-transfer")}
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

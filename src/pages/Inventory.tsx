@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { useRole } from "@/hooks/use-role";
 import {
   Card,
   CardContent,
@@ -152,6 +153,7 @@ const deviceModels = [
 ];
 
 export default function Inventory() {
+  const { permissions } = useRole();
   const [items, setItems] = useState(mockInventoryItems);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -296,163 +298,173 @@ export default function Inventory() {
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Item
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingItem ? "Edit Inventory Item" : "Add New Item"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {editingItem
-                      ? "Update the inventory item details"
-                      : "Add a new item to your inventory"}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Part Name *</Label>
-                      <Input
-                        id="name"
-                        placeholder="iPhone 14 Pro Screen"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        required
-                      />
+            {permissions.canEditInventory && (
+              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Item
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingItem ? "Edit Inventory Item" : "Add New Item"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingItem
+                        ? "Update the inventory item details"
+                        : "Add a new item to your inventory"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Part Name *</Label>
+                        <Input
+                          id="name"
+                          placeholder="iPhone 14 Pro Screen"
+                          value={formData.name}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category *</Label>
+                        <Select
+                          value={formData.category}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, category: value })
+                          }
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="purchaseCost">
+                          Purchase Cost (₹) *
+                        </Label>
+                        <Input
+                          id="purchaseCost"
+                          type="number"
+                          placeholder="0"
+                          value={formData.purchaseCost}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              purchaseCost: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sellingPrice">
+                          Selling Price (��) *
+                        </Label>
+                        <Input
+                          id="sellingPrice"
+                          type="number"
+                          placeholder="0"
+                          value={formData.sellingPrice}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              sellingPrice: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="currentStock">Current Stock *</Label>
+                        <Input
+                          id="currentStock"
+                          type="number"
+                          placeholder="0"
+                          value={formData.currentStock}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              currentStock: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minStockLevel">Min Stock Alert *</Label>
+                        <Input
+                          id="minStockLevel"
+                          type="number"
+                          placeholder="0"
+                          value={formData.minStockLevel}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              minStockLevel: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category *</Label>
+                      <Label htmlFor="supplier">Supplier</Label>
                       <Select
-                        value={formData.category}
+                        value={formData.supplier}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, category: value })
+                          setFormData({ ...formData, supplier: value })
                         }
-                        required
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder="Select supplier" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                          {suppliers.map((supplier) => (
+                            <SelectItem key={supplier} value={supplier}>
+                              {supplier}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="purchaseCost">Purchase Cost (₹) *</Label>
-                      <Input
-                        id="purchaseCost"
-                        type="number"
-                        placeholder="0"
-                        value={formData.purchaseCost}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            purchaseCost: e.target.value,
-                          })
-                        }
-                        required
-                      />
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={resetForm}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        {editingItem ? "Update Item" : "Add Item"}
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sellingPrice">Selling Price (��) *</Label>
-                      <Input
-                        id="sellingPrice"
-                        type="number"
-                        placeholder="0"
-                        value={formData.sellingPrice}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            sellingPrice: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentStock">Current Stock *</Label>
-                      <Input
-                        id="currentStock"
-                        type="number"
-                        placeholder="0"
-                        value={formData.currentStock}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            currentStock: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="minStockLevel">Min Stock Alert *</Label>
-                      <Input
-                        id="minStockLevel"
-                        type="number"
-                        placeholder="0"
-                        value={formData.minStockLevel}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            minStockLevel: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier">Supplier</Label>
-                    <Select
-                      value={formData.supplier}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, supplier: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select supplier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {suppliers.map((supplier) => (
-                          <SelectItem key={supplier} value={supplier}>
-                            {supplier}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button type="button" variant="outline" onClick={resetForm}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">
-                      {editingItem ? "Update Item" : "Add Item"}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
 
@@ -629,22 +641,26 @@ export default function Inventory() {
                         <TableCell>{getStatusBadge(item)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {permissions.canEditInventory && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleEdit(item)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive"
+                                  onClick={() => handleDelete(item.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
