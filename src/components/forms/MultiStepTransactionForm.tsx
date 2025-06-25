@@ -45,8 +45,9 @@ const transactionSchema = z.object({
 
   // Step 2: Repair Info
   repairType: z.string().min(1, "Repair type is required"),
+  customRepairType: z.string().optional(),
   repairCost: z.number().min(0, "Cost must be positive"),
-  paymentMethod: z.enum(["cash", "upi", "card", "bank-transfer"]),
+  paymentMethod: z.enum(["cash", "upi", "card"]),
   amountGiven: z.number().min(0, "Amount must be positive"),
 
   // Step 3: Parts & Supplier (optional)
@@ -78,6 +79,7 @@ const repairTypes = [
   "camera-repair",
   "water-damage",
   "software-issue",
+  "others",
 ];
 
 const deviceModels = [
@@ -401,7 +403,7 @@ export function MultiStepTransactionForm({
                     defaultValue={watchedValues.paymentMethod}
                     className="grid grid-cols-2 md:grid-cols-4 gap-4"
                   >
-                    {["cash", "upi", "card", "bank-transfer"].map((method) => (
+                    {["cash", "upi", "card"].map((method) => (
                       <div
                         key={method}
                         className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent"
