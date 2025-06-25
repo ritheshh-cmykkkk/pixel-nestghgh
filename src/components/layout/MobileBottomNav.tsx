@@ -21,7 +21,7 @@ const mobileNavigationItems = [
     allowedRoles: ["admin"],
   },
   {
-    name: "worker-home",
+    name: "home",
     href: "/worker",
     icon: LayoutDashboard,
     exact: true,

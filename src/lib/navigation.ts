@@ -27,7 +27,7 @@ export const navigationItems: NavigationItem[] = [
     allowedRoles: ["admin"], // Only admin can access dashboard
   },
   {
-    name: "worker-home",
+    name: "home",
     href: "/worker",
     icon: LayoutDashboard,
     exact: true,
