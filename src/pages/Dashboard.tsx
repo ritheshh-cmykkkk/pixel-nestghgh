@@ -49,6 +49,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { useRole } from "@/hooks/use-role";
 
 // Mock data for charts
 const weeklyRevenue = [
@@ -186,12 +187,15 @@ const paymentMethodIcons = {
 };
 
 export default function Dashboard() {
+  const { permissions, isWorker } = useRole();
   const [showProfits, setShowProfits] = useState(
-    localStorage.getItem("showProfits") === "true",
+    localStorage.getItem("showProfits") === "true" &&
+      permissions.canViewProfits,
   );
   const { t } = useLanguage();
 
   const toggleProfits = () => {
+    if (!permissions.canViewProfits) return;
     const newValue = !showProfits;
     setShowProfits(newValue);
     localStorage.setItem("showProfits", newValue.toString());
@@ -225,19 +229,21 @@ export default function Dashboard() {
               <Calendar className="mr-2 h-4 w-4" />
               Today: {new Date().toLocaleDateString()}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
-              ) : (
-                <Eye className="mr-2 h-4 w-4" />
-              )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
+            {permissions.canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -331,54 +337,88 @@ export default function Dashboard() {
               {t("quick-actions")}
             </CardTitle>
             <CardDescription className="text-sm">
-              Frequently used repair shop operations
+              {isWorker
+                ? "Available operations for workers"
+                : "Frequently used repair shop operations"}
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Link to="/transactions/new">
+          <CardContent
+            className={cn(
+              "grid gap-3",
+              isWorker
+                ? "grid-cols-2 sm:grid-cols-3"
+                : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
+            )}
+          >
+            {/* Available to all roles */}
+            <Link to="/customers/new">
               <Button
                 variant="outline"
                 className="h-20 flex flex-col gap-2 w-full"
               >
-                <Plus className="h-6 w-6" />
-                <span className="text-xs">{t("new-transaction")}</span>
+                <Users className="h-6 w-6" />
+                <span className="text-xs">Add New Customer</span>
               </Button>
             </Link>
-            <Link to="/inventory">
+            <Link to="/bills/new">
               <Button
                 variant="outline"
                 className="h-20 flex flex-col gap-2 w-full"
               >
-                <Package className="h-6 w-6" />
-                <span className="text-xs">{t("add-inventory")}</span>
+                <Receipt className="h-6 w-6" />
+                <span className="text-xs">Generate Bill</span>
               </Button>
             </Link>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <CreditCard className="h-6 w-6" />
-              <span className="text-xs">{t("record-payment")}</span>
-            </Button>
             <Link to="/suppliers">
               <Button
                 variant="outline"
                 className="h-20 flex flex-col gap-2 w-full"
               >
                 <Users className="h-6 w-6" />
-                <span className="text-xs">Add Supplier</span>
+                <span className="text-xs">Supplier Analysis</span>
               </Button>
             </Link>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <ShoppingCart className="h-6 w-6" />
-              <span className="text-xs">Order Parts</span>
-            </Button>
-            <Link to="/reports">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <FileText className="h-6 w-6" />
-                <span className="text-xs">View Reports</span>
-              </Button>
-            </Link>
+
+            {/* Admin-only actions */}
+            {!isWorker && (
+              <>
+                <Link to="/transactions/new">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Plus className="h-6 w-6" />
+                    <span className="text-xs">{t("new-transaction")}</span>
+                  </Button>
+                </Link>
+                <Link to="/inventory">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Package className="h-6 w-6" />
+                    <span className="text-xs">{t("add-inventory")}</span>
+                  </Button>
+                </Link>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-xs">{t("record-payment")}</span>
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <ShoppingCart className="h-6 w-6" />
+                  <span className="text-xs">Order Parts</span>
+                </Button>
+                <Link to="/reports">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span className="text-xs">View Reports</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -575,80 +615,86 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="space-y-3 sm:space-y-4">
-              {recentTransactions.slice(0, 5).map((transaction) => {
-                const StatusIcon =
-                  statusConfig[transaction.status as keyof typeof statusConfig]
-                    .icon;
-                const PaymentIcon =
-                  paymentMethodIcons[
-                    transaction.paymentMethod as keyof typeof paymentMethodIcons
-                  ];
+              {recentTransactions
+                .slice(0, isWorker ? 3 : 5)
+                .map((transaction) => {
+                  const StatusIcon =
+                    statusConfig[
+                      transaction.status as keyof typeof statusConfig
+                    ].icon;
+                  const PaymentIcon =
+                    paymentMethodIcons[
+                      transaction.paymentMethod as keyof typeof paymentMethodIcons
+                    ];
 
-                return (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-3 sm:p-4 rounded-lg border hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium text-sm sm:text-base">
-                                {transaction.customer}
-                              </p>
-                              <Badge
-                                className={cn(
-                                  "text-xs flex-shrink-0",
-                                  statusConfig[
-                                    transaction.status as keyof typeof statusConfig
-                                  ].color,
-                                )}
-                              >
-                                <StatusIcon className="h-3 w-3 mr-1" />
-                                {t(
-                                  statusConfig[
-                                    transaction.status as keyof typeof statusConfig
-                                  ].label,
-                                )}
-                              </Badge>
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              <span className="font-medium">
-                                {transaction.device}
-                              </span>
-                              {" • "}
-                              <span>{t(transaction.repair.toLowerCase())}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>
-                                {transaction.date} at {transaction.time}
-                              </span>
-                              <PaymentIcon className="h-3 w-3" />
-                              <span>{t(transaction.paymentMethod)}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between sm:justify-end gap-4">
-                            <div className="text-right">
-                              <div className="font-semibold text-sm sm:text-base">
-                                ₹{transaction.amount.toLocaleString()}
+                  return (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-3 sm:p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-medium text-sm sm:text-base">
+                                  {transaction.customer}
+                                </p>
+                                <Badge
+                                  className={cn(
+                                    "text-xs flex-shrink-0",
+                                    statusConfig[
+                                      transaction.status as keyof typeof statusConfig
+                                    ].color,
+                                  )}
+                                >
+                                  <StatusIcon className="h-3 w-3 mr-1" />
+                                  {t(
+                                    statusConfig[
+                                      transaction.status as keyof typeof statusConfig
+                                    ].label,
+                                  )}
+                                </Badge>
                               </div>
-                              {showProfits && (
-                                <div className="text-xs text-success">
-                                  Profit: ₹{transaction.profit.toLocaleString()}
+                              <div className="text-xs sm:text-sm text-muted-foreground">
+                                <span className="font-medium">
+                                  {transaction.device}
+                                </span>
+                                {" • "}
+                                <span>
+                                  {t(transaction.repair.toLowerCase())}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>
+                                  {transaction.date} at {transaction.time}
+                                </span>
+                                <PaymentIcon className="h-3 w-3" />
+                                <span>{t(transaction.paymentMethod)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-end gap-4">
+                              <div className="text-right">
+                                <div className="font-semibold text-sm sm:text-base">
+                                  ₹{transaction.amount.toLocaleString()}
                                 </div>
-                              )}
+                                {showProfits && (
+                                  <div className="text-xs text-success">
+                                    Profit: ₹
+                                    {transaction.profit.toLocaleString()}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </CardContent>
         </Card>

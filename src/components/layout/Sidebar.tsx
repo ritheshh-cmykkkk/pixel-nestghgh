@@ -2,62 +2,9 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  LayoutDashboard,
-  CreditCard,
-  Package,
-  Users,
-  Receipt,
-  TrendingUp,
-  FileText,
-  Settings,
-  X,
-  Smartphone,
-} from "lucide-react";
-
-const navigation = [
-  {
-    name: "dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    name: "transactions",
-    href: "/transactions",
-    icon: CreditCard,
-  },
-  {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
-  },
-  {
-    name: "suppliers",
-    href: "/suppliers",
-    icon: Users,
-  },
-  {
-    name: "expenditures",
-    href: "/expenditures",
-    icon: TrendingUp,
-  },
-  {
-    name: "bills",
-    href: "/bills",
-    icon: Receipt,
-  },
-  {
-    name: "reports",
-    href: "/reports",
-    icon: FileText,
-  },
-  {
-    name: "settings",
-    href: "/settings",
-    icon: Settings,
-  },
-];
+import { useRole } from "@/hooks/use-role";
+import { getNavigationForRole } from "@/lib/navigation";
+import { X, Smartphone } from "lucide-react";
 
 interface SidebarProps {
   open: boolean;
@@ -67,6 +14,9 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const { t } = useLanguage();
+  const { role } = useRole();
+
+  const navigation = getNavigationForRole(role);
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (item.exact) {
