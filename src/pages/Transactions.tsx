@@ -74,7 +74,7 @@ interface Transaction {
   cost: number;
   profit: number;
   status: "pending" | "in-progress" | "completed" | "delivered";
-  paymentMethod: "cash" | "upi" | "card" | "bank-transfer";
+  paymentMethod: "cash" | "upi" | "card";
   freeGlass: boolean;
 }
 
@@ -128,7 +128,7 @@ const mockTransactions: Transaction[] = [
     cost: 15000,
     profit: 5500,
     status: "completed",
-    paymentMethod: "bank-transfer",
+    paymentMethod: "card",
     freeGlass: true,
   },
   {
@@ -479,9 +479,6 @@ export default function Transactions() {
                     <SelectItem value="cash">{t("cash")}</SelectItem>
                     <SelectItem value="upi">{t("upi")}</SelectItem>
                     <SelectItem value="card">{t("card")}</SelectItem>
-                    <SelectItem value="bank-transfer">
-                      {t("bank-transfer")}
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

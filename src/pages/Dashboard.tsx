@@ -127,7 +127,7 @@ const recentTransactions = [
     status: "completed",
     date: "Yesterday",
     time: "4:20 PM",
-    paymentMethod: "bank-transfer",
+    paymentMethod: "card",
   },
   {
     id: 5,
@@ -184,7 +184,6 @@ const paymentMethodIcons = {
   cash: DollarSign,
   upi: Smartphone,
   card: CreditCard,
-  "bank-transfer": ArrowUpRight,
 };
 
 export default function Dashboard() {
