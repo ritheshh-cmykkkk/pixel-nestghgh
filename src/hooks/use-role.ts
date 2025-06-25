@@ -8,6 +8,7 @@ export interface RolePermissions {
   canAccessExpenditures: boolean;
   canEditInventory: boolean;
   canDeleteTransactions: boolean;
+  canDeleteWithinHours: number | null; // null means unlimited, number means hours limit
   canViewProfits: boolean;
   maxTransactionsView: number | null; // null means unlimited
 }
@@ -19,6 +20,7 @@ const rolePermissions: Record<UserRole, RolePermissions> = {
     canAccessExpenditures: true,
     canEditInventory: true,
     canDeleteTransactions: true,
+    canDeleteWithinHours: null, // unlimited
     canViewProfits: true,
     maxTransactionsView: null,
   },
@@ -27,7 +29,8 @@ const rolePermissions: Record<UserRole, RolePermissions> = {
     canAccessReports: false,
     canAccessExpenditures: false,
     canEditInventory: false,
-    canDeleteTransactions: false,
+    canDeleteTransactions: true, // workers can delete but with time limit
+    canDeleteWithinHours: 24, // can only delete within 24 hours
     canViewProfits: false,
     maxTransactionsView: 10,
   },
@@ -55,6 +58,16 @@ export function useRole() {
     return Boolean(permissions[permission]);
   };
 
+  const canDeleteTransaction = (transactionDate: Date): boolean => {
+    if (!permissions.canDeleteTransactions) return false;
+    if (permissions.canDeleteWithinHours === null) return true; // unlimited for admin
+
+    const now = new Date();
+    const hoursDiff =
+      (now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60);
+    return hoursDiff <= permissions.canDeleteWithinHours;
+  };
+
   const isAdmin = role === "admin";
   const isWorker = role === "worker";
 
@@ -62,6 +75,7 @@ export function useRole() {
     role,
     permissions,
     hasPermission,
+    canDeleteTransaction,
     isAdmin,
     isWorker,
   };

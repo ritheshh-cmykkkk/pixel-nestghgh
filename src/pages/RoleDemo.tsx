@@ -124,6 +124,17 @@ export default function RoleDemo() {
                   {permissions.maxTransactionsView || "Unlimited"}
                 </div>
               </div>
+
+              {/* Deletion time limit */}
+              <div className="grid grid-cols-3 gap-4 py-2">
+                <div className="text-sm">Delete Time Limit</div>
+                <div className="text-center text-sm">Unlimited</div>
+                <div className="text-center text-sm">
+                  {permissions.canDeleteWithinHours
+                    ? `${permissions.canDeleteWithinHours} hours`
+                    : "None"}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

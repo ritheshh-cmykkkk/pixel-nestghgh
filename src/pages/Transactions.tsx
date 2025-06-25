@@ -154,7 +154,7 @@ const statusConfig = {
 };
 
 export default function Transactions() {
-  const { permissions } = useRole();
+  const { permissions, canDeleteTransaction } = useRole();
   const [data, setData] = useState(mockTransactions);
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -273,42 +273,61 @@ export default function Transactions() {
       columnHelper.display({
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original.id)}
-              >
-                Copy transaction ID
-              </DropdownMenuItem>
-              {permissions.canDeleteTransactions && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to={`/transactions/${row.original.id}/edit`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit transaction
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => handleDelete(row.original.id)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete transaction
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canDeleteTransaction(row.original.date);
+          const canEdit = permissions.canDeleteTransactions; // Use same permission for edit
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(row.original.id)}
+                >
+                  Copy transaction ID
+                </DropdownMenuItem>
+                {(canEdit || canDelete) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    {canEdit && (
+                      <DropdownMenuItem asChild>
+                        <Link to={`/transactions/${row.original.id}/edit`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit transaction
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete ? (
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(row.original.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete transaction
+                      </DropdownMenuItem>
+                    ) : (
+                      permissions.canDeleteTransactions && (
+                        <DropdownMenuItem
+                          disabled
+                          className="text-muted-foreground"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete (24h limit exceeded)
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
       }),
     ],
     [showProfits, t],
@@ -383,7 +402,7 @@ export default function Transactions() {
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               {permissions.maxTransactionsView
-                ? `View recent transactions (limited to ${permissions.maxTransactionsView} entries)`
+                ? `View recent transactions (limited to ${permissions.maxTransactionsView} entries) • Can delete within 24 hours`
                 : "Manage and track all repair transactions"}
             </p>
           </div>
