@@ -24,7 +24,14 @@ export const navigationItems: NavigationItem[] = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
-    allowedRoles: ["admin", "worker"],
+    allowedRoles: ["admin"], // Only admin can access dashboard
+  },
+  {
+    name: "worker-home",
+    href: "/worker",
+    icon: LayoutDashboard,
+    exact: true,
+    allowedRoles: ["worker"], // Worker gets their own home page
   },
   {
     name: "transactions",

@@ -18,7 +18,14 @@ const mobileNavigationItems = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
-    allowedRoles: ["admin", "worker"],
+    allowedRoles: ["admin"],
+  },
+  {
+    name: "worker-home",
+    href: "/worker",
+    icon: LayoutDashboard,
+    exact: true,
+    allowedRoles: ["worker"],
   },
   {
     name: "transactions",
