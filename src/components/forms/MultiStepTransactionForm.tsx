@@ -349,14 +349,17 @@ export function MultiStepTransactionForm({
             )}
 
             {/* Step 2: Repair Info */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="repairType">{t("repair-type")} *</Label>
-                    <Select
-                      onValueChange={(value) => setValue("repairType", value)}
-                      defaultValue={watchedValues.repairType}
+        if (currentStep === 2) {
+          const fieldsToValidate = ["repairType", "repairCost", "warrantyPeriod"];
+
+          // If "others" is selected, also validate custom repair type
+          if (watchedValues.repairType === "others") {
+            fieldsToValidate.push("customRepairType");
+          }
+
+          const isValidStep2 = await trigger(fieldsToValidate);
+          if (!isValidStep2) return;
+        }
                     >
                       <SelectTrigger className="h-12">
                         <SelectValue placeholder="Select repair type" />
@@ -364,7 +367,7 @@ export function MultiStepTransactionForm({
                       <SelectContent>
                         {repairTypes.map((type) => (
                           <SelectItem key={type} value={type}>
-                            {t(type)}
+                            {type === "others" ? "Others (Custom)" : t(type)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -373,6 +376,24 @@ export function MultiStepTransactionForm({
                       <p className="text-sm text-destructive">
                         {errors.repairType.message}
                       </p>
+                    )}
+
+                    {/* Custom repair type input when "others" is selected */}
+                    {watchedValues.repairType === "others" && (
+                      <div className="space-y-2 mt-3">
+                        <Label htmlFor="customRepairType">Custom Repair Type *</Label>
+                        <Input
+                          id="customRepairType"
+                          placeholder="Enter custom repair type"
+                          {...register("customRepairType")}
+                          className="h-12"
+                        />
+                        {errors.customRepairType && (
+                          <p className="text-sm text-destructive">
+                            {errors.customRepairType.message}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -653,7 +674,10 @@ export function MultiStepTransactionForm({
                       <div>
                         <p className="text-muted-foreground">Repair</p>
                         <p className="font-medium">
-                          {t(watchedValues.repairType || "")}
+                          {watchedValues.repairType === "others"
+                            ? watchedValues.customRepairType || "Custom Repair"
+                            : t(watchedValues.repairType || "")
+                          }
                         </p>
                       </div>
                       <div>
