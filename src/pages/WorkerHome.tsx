@@ -9,6 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Plus,
   Receipt,
@@ -19,13 +28,45 @@ import {
   TrendingUp,
   Smartphone,
   User,
+  Edit3,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect } from "react";
 
 export default function WorkerHome() {
   const { role } = useRole();
   const { t } = useLanguage();
+  const [workerName, setWorkerName] = useState("Worker");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState("");
+
+  // Load worker name from localStorage on component mount
+  useEffect(() => {
+    const savedName = localStorage.getItem("workerName");
+    if (savedName && savedName.trim()) {
+      setWorkerName(savedName);
+    }
+  }, []);
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      setWorkerName(tempName.trim());
+      localStorage.setItem("workerName", tempName.trim());
+      setIsEditingName(false);
+      setTempName("");
+    }
+  };
+
+  const handleEditName = () => {
+    setTempName(workerName);
+    setIsEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setTempName("");
+    setIsEditingName(false);
+  };
 
   // Mock data for worker stats
   const todaysStats = {
@@ -67,10 +108,56 @@ export default function WorkerHome() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <User className="h-6 w-6 text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                Welcome, Worker
-              </h1>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                  Welcome, {workerName}
+                </h1>
+                <Dialog open={isEditingName} onOpenChange={setIsEditingName}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleEditName}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Edit Your Name</DialogTitle>
+                      <DialogDescription>
+                        Set your name to personalize your workspace
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Enter your name"
+                        value={tempName}
+                        onChange={(e) => setTempName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveName();
+                          if (e.key === "Escape") handleCancelEdit();
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={handleSaveName} size="sm">
+                          Save Name
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <p className="text-sm sm:text-base text-muted-foreground">
                 Ready to help customers with their mobile repair needs
               </p>
