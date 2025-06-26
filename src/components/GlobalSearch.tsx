@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Smartphone, Calendar, DollarSign, Loader2 } from "lucide-react";
+import { Search, User, Smartphone, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 
@@ -67,21 +66,29 @@ export function GlobalSearch({
         setIsSearching(true);
         try {
           // Try backend search first
-          const backendResults = await apiClient.request(`/search?q=${encodeURIComponent(searchQuery)}`);
+          const backendResults = await apiClient.request(
+            `/search?q=${encodeURIComponent(searchQuery)}`,
+          );
 
           // Transform backend results to match our format
           const transformedResults = backendResults.map((item: any) => ({
             type: item.type || "transaction",
             id: item.id,
             title: item.title || item.customerName || item.name,
-            subtitle: item.subtitle || `${item.deviceModel} • ₹${item.amount}` || item.phone,
-            link: item.type === "customer" ? "/transactions" : `/transactions/${item.id}`,
+            subtitle:
+              item.subtitle ||
+              `${item.deviceModel} • ₹${item.amount}` ||
+              item.phone,
+            link:
+              item.type === "customer"
+                ? "/transactions"
+                : `/transactions/${item.id}`,
             icon: item.type === "customer" ? User : Smartphone,
           }));
 
           setSearchResults(transformedResults);
         } catch (error) {
-          console.warn('Backend search failed, using local search:', error);
+          console.warn("Backend search failed, using local search:", error);
           // Fallback to local search
           const filtered = mockSearchData.filter(
             (item) =>
@@ -122,6 +129,55 @@ export function GlobalSearch({
     }
   };
 
+  const renderSearchContent = () => {
+    if (isSearching) {
+      return (
+        <div className="p-4 text-center">
+          <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Searching...</p>
+        </div>
+      );
+    }
+
+    if (searchResults.length === 0 && searchQuery.length > 1) {
+      return (
+        <div className="p-4 text-center text-sm text-muted-foreground">
+          No results found for "{searchQuery}"
+        </div>
+      );
+    }
+
+    return searchResults.map((result) => {
+      const Icon = result.icon;
+      return (
+        <Link
+          key={result.id}
+          to={result.link}
+          onClick={handleResultClick}
+          className="flex items-center gap-3 p-3 hover:bg-accent transition-colors border-b last:border-b-0"
+        >
+          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="font-medium text-sm truncate">{result.title}</p>
+              <Badge
+                variant="secondary"
+                className={`text-xs ${getTypeColor(result.type)}`}
+              >
+                {result.type}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground truncate">
+              {result.subtitle}
+            </p>
+          </div>
+        </Link>
+      );
+    });
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -136,7 +192,9 @@ export function GlobalSearch({
           />
         </div>
       </PopoverTrigger>
-      {searchResults.length > 0 && (
+      {(searchResults.length > 0 ||
+        isSearching ||
+        (searchQuery.length > 1 && !isSearching)) && (
         <PopoverContent
           className="w-80 p-0"
           align="start"
@@ -149,47 +207,7 @@ export function GlobalSearch({
             </h4>
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {isSearching ? (
-              <div className="p-4 text-center">
-                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Searching...</p>
-              </div>
-            ) : searchResults.length > 0 ? (
-              searchResults.map((result) => {
-              const Icon = result.icon;
-              return (
-                <Link
-                  key={result.id}
-                  to={result.link}
-                  onClick={handleResultClick}
-                  className="flex items-center gap-3 p-3 hover:bg-accent transition-colors border-b last:border-b-0"
-                >
-                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm truncate">
-                        {result.title}
-                      </p>
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs ${getTypeColor(result.type)}`}
-                      >
-                        {result.type}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {result.subtitle}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            ) : searchQuery.length > 1 && !isSearching ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                No results found for "{searchQuery}"
-              </div>
-            ) : null}
+            {renderSearchContent()}
           </div>
         </PopoverContent>
       )}
