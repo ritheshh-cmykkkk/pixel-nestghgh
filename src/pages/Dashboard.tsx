@@ -201,7 +201,6 @@ export default function Dashboard() {
   const todayRevenue = 51300;
   const todayProfit = showProfits ? 20520 : null;
   const pendingRepairs = 7;
-  const inventoryAlerts = lowStockItems.filter((item) => item.critical).length;
   const weeklyTotal = weeklyRevenue.reduce((sum, day) => sum + day.revenue, 0);
   const weeklyProfitTotal = showProfits
     ? weeklyRevenue.reduce((sum, day) => sum + day.profit, 0)
@@ -242,7 +241,7 @@ export default function Dashboard() {
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
           <Card className="card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -279,23 +278,6 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center text-xs text-muted-foreground">
                 5 in progress, 2 new
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("inventory-alerts")}
-              </CardTitle>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {inventoryAlerts}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                Critical stock items
               </div>
             </CardContent>
           </Card>
@@ -344,15 +326,6 @@ export default function Dashboard() {
                 <span className="text-xs">{t("new-transaction")}</span>
               </Button>
             </Link>
-            <Link to="/inventory">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <Package className="h-6 w-6" />
-                <span className="text-xs">{t("add-inventory")}</span>
-              </Button>
-            </Link>
             <Button variant="outline" className="h-20 flex flex-col gap-2">
               <CreditCard className="h-6 w-6" />
               <span className="text-xs">{t("record-payment")}</span>
@@ -382,9 +355,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Charts and Low Stock */}
-        <div className="grid gap-4 lg:grid-cols-7">
-          <Card className="lg:col-span-4">
+        {/* Charts */}
+        <div className="grid gap-4 lg:grid-cols-1">
+          <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">
                 Weekly Revenue & Profit
@@ -421,61 +394,11 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
-          <Card className="lg:col-span-3">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg sm:text-xl">
-                  Low Stock Alerts
-                </CardTitle>
-                <Badge variant="destructive" className="text-xs">
-                  {inventoryAlerts} critical
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {lowStockItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg border"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {item.item}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-muted-foreground">
-                          Stock: {item.stock}/{item.minStock}
-                        </p>
-                        <Progress
-                          value={(item.stock / item.minStock) * 100}
-                          className="h-1.5 flex-1"
-                        />
-                      </div>
-                    </div>
-                    <Badge
-                      variant={item.critical ? "destructive" : "warning"}
-                      className="text-xs ml-2"
-                    >
-                      {item.critical ? t("critical") : t("low")}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-              <Link to="/inventory">
-                <Button variant="outline" className="w-full mt-4">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Manage Inventory
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Repair Types Analysis */}
-        <div className="grid gap-4 lg:grid-cols-7">
-          <Card className="lg:col-span-3">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">
                 Repair Type Distribution
