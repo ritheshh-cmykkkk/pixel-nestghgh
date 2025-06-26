@@ -2,10 +2,10 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth, type UserRole } from "@/contexts/AuthContext";
 import {
   LayoutDashboard,
   CreditCard,
-  Package,
   Users,
   Receipt,
   TrendingUp,
@@ -13,6 +13,7 @@ import {
   Settings,
   X,
   Smartphone,
+  LogOut,
 } from "lucide-react";
 
 const navigation = [
@@ -21,41 +22,43 @@ const navigation = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
-  },
-  {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
     name: "suppliers",
     href: "/suppliers",
     icon: Users,
+    roles: ["admin", "owner"] as UserRole[],
   },
   {
     name: "expenditures",
     href: "/expenditures",
     icon: TrendingUp,
+    roles: ["admin", "owner"] as UserRole[],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
     name: "reports",
     href: "/reports",
     icon: FileText,
+    roles: ["admin", "owner"] as UserRole[],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
 ];
 
@@ -67,6 +70,7 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const { t } = useLanguage();
+  const { hasAccess, logout, user } = useAuth();
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (item.exact) {
@@ -74,6 +78,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     }
     return location.pathname.startsWith(item.href);
   };
+
+  const visibleNavigation = navigation.filter((item) => hasAccess(item.roles));
 
   return (
     <>
@@ -97,7 +103,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-2">
-              {navigation.map((item) => (
+              {visibleNavigation.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.href}
@@ -120,6 +126,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   </Link>
                 </li>
               ))}
+              <li className="mt-auto pt-4 border-t border-sidebar-border">
+                <div className="px-4 py-2 mb-2">
+                  <div className="text-xs text-sidebar-foreground/60 uppercase tracking-wider">
+                    Logged in as
+                  </div>
+                  <div className="text-sm font-medium text-sidebar-foreground capitalize">
+                    {user?.role}
+                  </div>
+                </div>
+                <Button
+                  onClick={logout}
+                  variant="ghost"
+                  className="w-full justify-start gap-x-3 rounded-lg p-4 text-sm font-medium leading-6 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  Sign out
+                </Button>
+              </li>
             </ul>
           </nav>
         </div>
@@ -158,7 +182,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-2">
-              {navigation.map((item) => (
+              {visibleNavigation.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.href}
@@ -182,6 +206,27 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   </Link>
                 </li>
               ))}
+              <li className="mt-auto pt-4 border-t border-sidebar-border">
+                <div className="px-4 py-2 mb-2">
+                  <div className="text-xs text-sidebar-foreground/60 uppercase tracking-wider">
+                    Logged in as
+                  </div>
+                  <div className="text-sm font-medium text-sidebar-foreground capitalize">
+                    {user?.role}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    logout();
+                    onClose();
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start gap-x-3 rounded-lg p-4 text-sm font-medium leading-6 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  Sign out
+                </Button>
+              </li>
             </ul>
           </nav>
         </div>

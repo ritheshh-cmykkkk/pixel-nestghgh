@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Smartphone,
   Eye,
   EyeOff,
@@ -20,26 +27,79 @@ import {
   Wrench,
   Zap,
   Shield,
+  User,
+  Crown,
+  Users,
 } from "lucide-react";
+import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+
+const roleIcons = {
+  admin: Crown,
+  owner: User,
+  worker: Users,
+};
+
+const roleDescriptions = {
+  admin: "Full system access - manage everything",
+  owner: "Business management and worker oversight",
+  worker: "Daily operations and transaction handling",
+};
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: "" as UserRole | "",
     rememberMe: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.role) {
+      toast({
+        title: "Role Required",
+        description: "Please select your role to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    // Mock login delay
-    setTimeout(() => {
+
+    try {
+      const success = await login(
+        formData.email,
+        formData.password,
+        formData.role,
+      );
+      if (success) {
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${formData.role}`,
+        });
+        navigate("/");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during login.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      // Redirect to dashboard (UI only)
-      window.location.href = "/";
-    }, 2000);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -66,8 +126,8 @@ export default function Login() {
             Streamline your mobile repair business
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-md">
-            Track repairs, manage inventory, handle suppliers, and generate
-            detailed reports for your mobile repair shop.
+            Track repairs, manage suppliers, and generate detailed reports for
+            your mobile repair shop.
           </p>
 
           <div className="space-y-4">
@@ -84,7 +144,7 @@ export default function Login() {
                 <Zap className="h-4 w-4 text-white" />
               </div>
               <span className="text-white/90">
-                Inventory & supplier management
+                Supplier & customer management
               </span>
             </div>
             <div className="flex items-center space-x-3">
@@ -166,6 +226,41 @@ export default function Login() {
                       )}
                     </Button>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="role">Login as</Label>
+                  <Select
+                    onValueChange={(value: UserRole) =>
+                      handleInputChange("role", value)
+                    }
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(roleDescriptions).map(
+                        ([role, description]) => {
+                          const Icon = roleIcons[role as UserRole];
+                          return (
+                            <SelectItem key={role} value={role}>
+                              <div className="flex items-center space-x-2">
+                                <Icon className="h-4 w-4" />
+                                <div className="flex flex-col">
+                                  <span className="capitalize font-medium">
+                                    {role}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {description}
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          );
+                        },
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex items-center justify-between">
