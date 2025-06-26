@@ -131,7 +131,7 @@ const mockExpenditures = [
 
 // Chart data
 const categoryData = [
-  { name: "Inventory", amount: 15000, color: "#3B82F6" },
+  { name: "Supplies", amount: 15000, color: "#3B82F6" },
   { name: "Rent", amount: 25000, color: "#EF4444" },
   { name: "Utilities", amount: 3500, color: "#F59E0B" },
   { name: "Salaries", amount: 18000, color: "#10B981" },
