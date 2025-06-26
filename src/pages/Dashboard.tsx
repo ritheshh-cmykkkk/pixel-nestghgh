@@ -7,9 +7,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   BarChart,
   Bar,
@@ -45,6 +47,7 @@ import {
   ShoppingCart,
   Zap,
   FileText,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -216,27 +219,42 @@ export default function Dashboard() {
               {t("dashboard")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Welcome back! Here's your repair shop overview for today.
+              Welcome back, {user?.name}!{" "}
+              {user?.role === "worker"
+                ? "Here are your daily tasks."
+                : "Here's your repair shop overview for today."}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
+            {/* Global Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions, customers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10 sm:h-9 w-full sm:w-64"
+              />
+            </div>
             <Button variant="outline" size="sm" className="h-10 sm:h-9">
               <Calendar className="mr-2 h-4 w-4" />
               Today: {new Date().toLocaleDateString()}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
-              ) : (
-                <Eye className="mr-2 h-4 w-4" />
-              )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
+            {canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -253,7 +271,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-success">
                 ₹{todayRevenue.toLocaleString()}
               </div>
-              {showProfits && todayProfit && (
+              {canViewProfits && showProfits && todayProfit && (
                 <div className="text-sm text-muted-foreground">
                   Profit: ₹{todayProfit.toLocaleString()}
                 </div>
