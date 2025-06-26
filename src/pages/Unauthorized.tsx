@@ -46,7 +46,7 @@ export default function Unauthorized() {
             <Button asChild variant="outline" size="sm" className="w-full">
               <a href="tel:+919392404104">
                 <Phone className="mr-2 h-4 w-4" />
-                Call Support: 9392404104
+                Call Support
               </a>
             </Button>
           </div>

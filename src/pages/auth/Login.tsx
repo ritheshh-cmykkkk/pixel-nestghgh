@@ -13,13 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Smartphone,
   Eye,
   EyeOff,
@@ -27,24 +20,9 @@ import {
   Wrench,
   Zap,
   Shield,
-  User,
-  Crown,
-  Users,
 } from "lucide-react";
-import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-
-const roleIcons = {
-  admin: Crown,
-  owner: User,
-  worker: Users,
-};
-
-const roleDescriptions = {
-  admin: "Full system access - manage everything",
-  owner: "Business management and worker oversight",
-  worker: "Daily operations and transaction handling",
-};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -54,34 +32,20 @@ export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "" as UserRole | "",
     rememberMe: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.role) {
-      toast({
-        title: "Role Required",
-        description: "Please select your role to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const success = await login(
-        formData.email,
-        formData.password,
-        formData.role,
-      );
+      const success = await login(formData.email, formData.password);
       if (success) {
         toast({
           title: "Welcome back!",
-          description: `Logged in as ${formData.role}`,
+          description: "Login successful",
         });
         navigate("/");
       } else {
@@ -228,41 +192,6 @@ export default function Login() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="role">Login as</Label>
-                  <Select
-                    onValueChange={(value: UserRole) =>
-                      handleInputChange("role", value)
-                    }
-                  >
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(roleDescriptions).map(
-                        ([role, description]) => {
-                          const Icon = roleIcons[role as UserRole];
-                          return (
-                            <SelectItem key={role} value={role}>
-                              <div className="flex items-center space-x-2">
-                                <Icon className="h-4 w-4" />
-                                <div className="flex flex-col">
-                                  <span className="capitalize font-medium">
-                                    {role}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {description}
-                                  </span>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          );
-                        },
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -307,7 +236,7 @@ export default function Login() {
                   href="tel:+919392404104"
                   className="text-primary hover:underline font-medium"
                 >
-                  Call Support: 9392404104
+                  Call Support
                 </a>
               </div>
             </CardFooter>
