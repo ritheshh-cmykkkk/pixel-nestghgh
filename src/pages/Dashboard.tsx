@@ -406,7 +406,7 @@ export default function Dashboard() {
                       fill="hsl(var(--primary))"
                       name="revenue"
                     />
-                    {showProfits && (
+                    {canViewProfits && showProfits && (
                       <Bar
                         dataKey="profit"
                         fill="hsl(var(--success))"
