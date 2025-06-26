@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { defaultSuppliers } from "@/data/suppliers";
+import { apiClient } from "@/lib/api";
 import {
   Users,
   Plus,
@@ -51,8 +52,9 @@ import {
   Calendar,
   TrendingUp,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -60,9 +62,26 @@ export default function Suppliers() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [suppliers, setSuppliers] = useState(defaultSuppliers);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
+
+  useEffect(() => {
+    const loadSuppliers = async () => {
+      try {
+        const backendSuppliers = await apiClient.getSuppliers();
+        setSuppliers(backendSuppliers);
+      } catch (error) {
+        console.warn("Backend suppliers not available, using defaults:", error);
+        // Keep default suppliers as fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSuppliers();
+  }, []);
 
   // Filter suppliers based on search and status
   const filteredSuppliers = suppliers.filter((supplier) => {
@@ -86,21 +105,39 @@ export default function Suppliers() {
     0,
   );
 
-  const handleAddSupplier = (newSupplier: any) => {
-    const supplier = {
-      ...newSupplier,
-      id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
-      totalPurchases: 0,
-      outstandingAmount: 0,
-      lastOrderDate: new Date().toISOString().split("T")[0],
-      status: "active",
-    };
-    setSuppliers([...suppliers, supplier]);
-    setShowAddDialog(false);
-    toast({
-      title: "Supplier Added",
-      description: `${supplier.name} has been added successfully.`,
-    });
+  const handleAddSupplier = async (newSupplier: any) => {
+    try {
+      const supplier = {
+        ...newSupplier,
+        id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
+        totalPurchases: 0,
+        outstandingAmount: 0,
+        lastOrderDate: new Date().toISOString().split("T")[0],
+        status: "active",
+      };
+
+      // Try backend first
+      try {
+        const createdSupplier = await apiClient.createSupplier(supplier);
+        setSuppliers([...suppliers, createdSupplier]);
+      } catch (error) {
+        // Fallback to local storage
+        console.warn("Backend create failed, using local:", error);
+        setSuppliers([...suppliers, supplier]);
+      }
+
+      setShowAddDialog(false);
+      toast({
+        title: "Supplier Added",
+        description: `${supplier.name} has been added successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add supplier. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const openWhatsApp = (phone: string, name: string) => {
@@ -246,97 +283,119 @@ export default function Suppliers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{supplier.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {supplier.contactPerson}
-                          </div>
-                          <div className="text-xs text-muted-foreground flex items-center mt-1">
-                            <MapPin className="mr-1 h-3 w-3" />
-                            {supplier.address}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Phone className="mr-1 h-3 w-3" />
-                            {supplier.phone}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              openWhatsApp(
-                                supplier.whatsapp,
-                                supplier.contactPerson,
-                              )
-                            }
-                            className="h-6 text-xs"
-                          >
-                            <MessageCircle className="mr-1 h-3 w-3" />
-                            WhatsApp
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          ₹{supplier.outstandingAmount.toLocaleString()}
-                        </div>
-                        {supplier.outstandingAmount > 0 && (
-                          <Badge variant="destructive" className="text-xs mt-1">
-                            <AlertCircle className="mr-1 h-3 w-3" />
-                            Due
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          ₹{supplier.totalPurchases.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {supplier.category}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center text-sm">
-                          <Calendar className="mr-1 h-3 w-3" />
-                          {new Date(
-                            supplier.lastOrderDate,
-                          ).toLocaleDateString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {supplier.paymentTerms}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            supplier.status === "active"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {supplier.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link to={`/suppliers/${supplier.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Loading suppliers...</span>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : filteredSuppliers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8">
+                        <div className="text-muted-foreground">
+                          No suppliers found
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredSuppliers.map((supplier) => (
+                      <TableRow key={supplier.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{supplier.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {supplier.contactPerson}
+                            </div>
+                            <div className="text-xs text-muted-foreground flex items-center mt-1">
+                              <MapPin className="mr-1 h-3 w-3" />
+                              {supplier.address}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm">
+                              <Phone className="mr-1 h-3 w-3" />
+                              {supplier.phone}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                openWhatsApp(
+                                  supplier.whatsapp,
+                                  supplier.contactPerson,
+                                )
+                              }
+                              className="h-6 text-xs"
+                            >
+                              <MessageCircle className="mr-1 h-3 w-3" />
+                              WhatsApp
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            ₹{supplier.outstandingAmount.toLocaleString()}
+                          </div>
+                          {supplier.outstandingAmount > 0 && (
+                            <Badge
+                              variant="destructive"
+                              className="text-xs mt-1"
+                            >
+                              <AlertCircle className="mr-1 h-3 w-3" />
+                              Due
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            ₹{supplier.totalPurchases.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {supplier.category}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-sm">
+                            <Calendar className="mr-1 h-3 w-3" />
+                            {new Date(
+                              supplier.lastOrderDate,
+                            ).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {supplier.paymentTerms}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              supplier.status === "active"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {supplier.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Link to={`/suppliers/${supplier.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
