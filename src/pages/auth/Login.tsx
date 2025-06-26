@@ -234,22 +234,6 @@ export default function Login() {
               </form>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <div className="bg-muted/50 rounded-lg p-4 text-center">
-                <p className="text-sm font-medium text-foreground mb-2">
-                  Fixed Login Credentials:
-                </p>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div>
-                    <strong>Admin (Rajashekar):</strong> admin / admin123
-                  </div>
-                  <div>
-                    <strong>Owner:</strong> owner / owner456
-                  </div>
-                  <div>
-                    <strong>Worker (Sravan):</strong> worker / worker123
-                  </div>
-                </div>
-              </div>
               <div className="text-center text-sm text-muted-foreground">
                 Need help with your account?{" "}
                 <a
