@@ -76,7 +76,7 @@ const mockExpenditures = [
     id: "EXP001",
     date: "2024-01-15",
     description: "Mobile phone parts purchase",
-    category: "Inventory",
+    category: "Supplies",
     amount: 15000,
     paymentMethod: "bank_transfer",
     supplier: "TechParts Solutions",
