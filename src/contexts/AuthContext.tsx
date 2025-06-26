@@ -12,7 +12,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   hasAccess: (requiredRoles: UserRole[]) => boolean;
@@ -57,11 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
     setLoading(true);
     try {
       // Try backend authentication first
-      const response = await apiClient.login(email, password);
+      const response = await apiClient.login(username, password);
       const userData: User = {
         id: response.id || response.user?.id,
         email: response.email || response.user?.email,
@@ -74,32 +77,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return true;
     } catch (error) {
-      // Fallback to local authentication if backend is not available
+      // Fallback to local authentication with fixed usernames
       console.warn("Backend login failed, using local auth:", error);
 
-      // Auto-detect role based on email
-      let role: UserRole = "worker"; // default
-      if (email.includes("admin")) role = "admin";
-      else if (email.includes("owner")) role = "owner";
-
+      // Fixed usernames and credentials
       const fixedUsers = {
         admin: {
-          id: "ADM001",
-          email: "admin@expenso.com",
-          name: "System Admin",
+          id: "ADMIN001",
+          email: "admin@callmemobiles.com",
+          name: "System Administrator",
+          username: "admin",
+          password: "admin123",
         },
-        owner: { id: "OWN001", email: "owner@expenso.com", name: "Shop Owner" },
+        owner: {
+          id: "OWNER001",
+          email: "owner@callmemobiles.com",
+          name: "Shop Owner",
+          username: "owner",
+          password: "owner123",
+        },
         worker: {
-          id: "WRK001",
-          email: "worker@expenso.com",
+          id: "WORKER001",
+          email: "worker@callmemobiles.com",
           name: "Shop Worker",
+          username: "worker",
+          password: "worker123",
         },
       };
 
-      if (email && password) {
+      // Check if username and password match any fixed user
+      const userEntry = Object.entries(fixedUsers).find(
+        ([role, user]) =>
+          user.username === username.toLowerCase() &&
+          user.password === password,
+      );
+
+      if (userEntry) {
+        const [role, userInfo] = userEntry;
         const mockUser: User = {
-          ...fixedUsers[role],
-          role,
+          id: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          role: role as UserRole,
         };
 
         setUser(mockUser);

@@ -30,7 +30,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
@@ -41,7 +41,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const success = await login(formData.email, formData.password);
+      const success = await login(formData.username, formData.password);
       if (success) {
         toast({
           title: "Welcome back!",
@@ -51,7 +51,7 @@ export default function Login() {
       } else {
         toast({
           title: "Login Failed",
-          description: "Invalid credentials. Please try again.",
+          description: "Invalid username or password. Please try again.",
           variant: "destructive",
         });
       }
@@ -132,7 +132,9 @@ export default function Login() {
               <Smartphone className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Expenso</h1>
+              <h1 className="text-xl font-bold text-foreground">
+                Call Me Mobiles
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Mobile Repair Tracker
               </p>
@@ -151,13 +153,15 @@ export default function Login() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="Use: admin@expenso.com / owner@expenso.com / worker@expenso.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    id="username"
+                    type="text"
+                    placeholder="Use: admin / owner / worker"
+                    value={formData.username}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
                     required
                     className="h-11"
                   />
