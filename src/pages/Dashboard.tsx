@@ -193,6 +193,7 @@ export default function Dashboard() {
     localStorage.getItem("showProfits") === "true",
   );
   const { t } = useLanguage();
+  const { user, hasAccess } = useAuth();
 
   const toggleProfits = () => {
     const newValue = !showProfits;
@@ -208,6 +209,9 @@ export default function Dashboard() {
   const weeklyProfitTotal = showProfits
     ? weeklyRevenue.reduce((sum, day) => sum + day.profit, 0)
     : null;
+
+  // Check if user can view profits (admin and owner only)
+  const canViewProfits = hasAccess(["admin", "owner"]);
 
   return (
     <AppLayout showBreadcrumbs={false}>
@@ -303,7 +307,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 ₹{weeklyTotal.toLocaleString()}
               </div>
-              {showProfits && weeklyProfitTotal && (
+              {canViewProfits && showProfits && weeklyProfitTotal && (
                 <div className="text-sm text-muted-foreground">
                   Profit: ₹{weeklyProfitTotal.toLocaleString()}
                 </div>
@@ -459,7 +463,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card className="lg:col-span-4">
+            <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg sm:text-xl">
                   Repair Performance
@@ -564,7 +568,7 @@ export default function Dashboard() {
                                 {transaction.device}
                               </span>
                               {" • "}
-                              <span>{t(transaction.repair.toLowerCase())}</span>
+                              <span>{transaction.repair}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <span>
