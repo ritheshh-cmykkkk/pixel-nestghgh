@@ -553,7 +553,7 @@ export default function Expenditures() {
 function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
   const [formData, setFormData] = useState({
     description: "",
-    category: "Inventory",
+    category: "Supplies",
     amount: "",
     paymentMethod: "cash",
     supplier: "",
@@ -568,7 +568,7 @@ function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
     });
     setFormData({
       description: "",
-      category: "Inventory",
+      category: "Supplies",
       amount: "",
       paymentMethod: "cash",
       supplier: "",
@@ -607,7 +607,7 @@ function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Inventory">Inventory</SelectItem>
+              <SelectItem value="Supplies">Supplies</SelectItem>
               <SelectItem value="Rent">Rent</SelectItem>
               <SelectItem value="Utilities">Utilities</SelectItem>
               <SelectItem value="Salaries">Salaries</SelectItem>
