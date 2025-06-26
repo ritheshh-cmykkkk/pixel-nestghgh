@@ -81,7 +81,7 @@ export default function Login() {
               <Smartphone className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Expenso</h1>
+              <h1 className="text-2xl font-bold">Call Me Mobiles</h1>
               <p className="text-white/80 text-sm">Mobile Repair Tracker</p>
             </div>
           </div>
@@ -234,6 +234,22 @@ export default function Login() {
               </form>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
+              <div className="bg-muted/50 rounded-lg p-4 text-center">
+                <p className="text-sm font-medium text-foreground mb-2">
+                  Fixed Login Credentials:
+                </p>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <div>
+                    <strong>Admin:</strong> admin / admin123
+                  </div>
+                  <div>
+                    <strong>Owner:</strong> owner / owner123
+                  </div>
+                  <div>
+                    <strong>Worker:</strong> worker / worker123
+                  </div>
+                </div>
+              </div>
               <div className="text-center text-sm text-muted-foreground">
                 Need help with your account?{" "}
                 <a

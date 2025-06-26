@@ -93,7 +93,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-sidebar-foreground">
-                  Expenso
+                  Call Me Mobiles
                 </h1>
                 <p className="text-xs text-sidebar-foreground/60">
                   Mobile Repair Tracker
@@ -164,7 +164,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-sidebar-foreground">
-                  Expenso
+                  Call Me Mobiles
                 </h1>
                 <p className="text-xs text-sidebar-foreground/60">
                   Mobile Repair Tracker

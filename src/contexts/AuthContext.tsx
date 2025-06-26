@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const savedUser = localStorage.getItem("expenso_user");
+      const savedUser = localStorage.getItem("callmemobiles_user");
       if (savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(parsedUser);
           }
         } catch (error) {
-          localStorage.removeItem("expenso_user");
+          localStorage.removeItem("callmemobiles_user");
         }
       }
       setLoading(false);
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(userData);
-      localStorage.setItem("expenso_user", JSON.stringify(userData));
+      localStorage.setItem("callmemobiles_user", JSON.stringify(userData));
       setLoading(false);
       return true;
     } catch (error) {
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         setUser(mockUser);
-        localStorage.setItem("expenso_user", JSON.stringify(mockUser));
+        localStorage.setItem("callmemobiles_user", JSON.stringify(mockUser));
         setLoading(false);
         return true;
       }
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("expenso_user");
+    localStorage.removeItem("callmemobiles_user");
   };
 
   const hasAccess = (requiredRoles: UserRole[]): boolean => {

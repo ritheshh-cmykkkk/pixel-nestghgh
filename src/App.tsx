@@ -156,7 +156,7 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="expenso-theme">
+    <ThemeProvider defaultTheme="system" storageKey="callmemobiles-theme">
       <AuthProvider>
         <LanguageProvider>
           <ConnectionProvider>
