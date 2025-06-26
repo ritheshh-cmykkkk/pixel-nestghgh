@@ -348,34 +348,39 @@ export default function Dashboard() {
               <CreditCard className="h-6 w-6" />
               <span className="text-xs">{t("record-payment")}</span>
             </Button>
-            <Link to="/suppliers">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <Users className="h-6 w-6" />
-                <span className="text-xs">Add Supplier</span>
-              </Button>
-            </Link>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <ShoppingCart className="h-6 w-6" />
-              <span className="text-xs">Order Parts</span>
-            </Button>
-            <Link to="/reports">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <FileText className="h-6 w-6" />
-                <span className="text-xs">View Reports</span>
-              </Button>
-            </Link>
+            {hasAccess(['admin', 'owner']) && (
+              <>
+                <Link to="/suppliers">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Users className="h-6 w-6" />
+                    <span className="text-xs">Add Supplier</span>
+                  </Button>
+                </Link>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <ShoppingCart className="h-6 w-6" />
+                  <span className="text-xs">Order Parts</span>
+                </Button>
+                <Link to="/reports">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span className="text-xs">View Reports</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </CardContent>
         </Card>
 
-        {/* Charts */}
-        <div className="grid gap-4 lg:grid-cols-1">
-          <Card>
+        {/* Charts - Only for Admin and Owner */}
+        {hasAccess(['admin', 'owner']) && (
+          <div className="grid gap-4 lg:grid-cols-1">
+            <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">
                 Weekly Revenue & Profit
@@ -412,10 +417,12 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        )}
 
-        {/* Repair Types Analysis */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        {/* Repair Types Analysis - Only for Admin and Owner */}
+        {hasAccess(['admin', 'owner']) && (
+          <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">
