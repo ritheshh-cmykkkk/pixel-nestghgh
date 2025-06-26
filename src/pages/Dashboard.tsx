@@ -348,7 +348,7 @@ export default function Dashboard() {
               <CreditCard className="h-6 w-6" />
               <span className="text-xs">{t("record-payment")}</span>
             </Button>
-            {hasAccess(['admin', 'owner']) && (
+            {hasAccess(["admin", "owner"]) && (
               <>
                 <Link to="/suppliers">
                   <Button
@@ -378,129 +378,132 @@ export default function Dashboard() {
         </Card>
 
         {/* Charts - Only for Admin and Owner */}
-        {hasAccess(['admin', 'owner']) && (
+        {hasAccess(["admin", "owner"]) && (
           <div className="grid gap-4 lg:grid-cols-1">
             <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Weekly Revenue & Profit
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Revenue, repairs, and profit trends for this week
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-2 sm:px-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={weeklyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      `₹${value.toLocaleString()}`,
-                      name === "revenue" ? "Revenue" : "Profit",
-                    ]}
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    fill="hsl(var(--primary))"
-                    name="revenue"
-                  />
-                  {showProfits && (
-                    <Bar
-                      dataKey="profit"
-                      fill="hsl(var(--success))"
-                      name="profit"
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Weekly Revenue & Profit
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Revenue, repairs, and profit trends for this week
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={weeklyRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip
+                      formatter={(value, name) => [
+                        `₹${value.toLocaleString()}`,
+                        name === "revenue" ? "Revenue" : "Profit",
+                      ]}
                     />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+                    <Bar
+                      dataKey="revenue"
+                      fill="hsl(var(--primary))"
+                      name="revenue"
+                    />
+                    {showProfits && (
+                      <Bar
+                        dataKey="profit"
+                        fill="hsl(var(--success))"
+                        name="profit"
+                      />
+                    )}
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </div>
         )}
 
         {/* Repair Types Analysis - Only for Admin and Owner */}
-        {hasAccess(['admin', 'owner']) && (
+        {hasAccess(["admin", "owner"]) && (
           <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Repair Type Distribution
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Most common repairs this month
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={repairTypeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="count"
-                  >
-                    {repairTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                {repairTypeData.map((type, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: type.color }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {type.type}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Repair Type Distribution
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Most common repairs this month
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={repairTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="count"
+                    >
+                      {repairTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {repairTypeData.map((type, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: type.color }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {type.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card className="lg:col-span-4">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Repair Performance
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Count and revenue by repair type
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {repairTypeData.map((repair, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-sm">{repair.type}</span>
-                      <div className="text-right">
-                        <span className="text-sm font-semibold">
-                          {repair.count} repairs
+            <Card className="lg:col-span-4">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Repair Performance
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Count and revenue by repair type
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {repairTypeData.map((repair, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-sm">
+                          {repair.type}
                         </span>
-                        <div className="text-xs text-muted-foreground">
-                          ₹{repair.revenue.toLocaleString()}
+                        <div className="text-right">
+                          <span className="text-sm font-semibold">
+                            {repair.count} repairs
+                          </span>
+                          <div className="text-xs text-muted-foreground">
+                            ₹{repair.revenue.toLocaleString()}
+                          </div>
                         </div>
                       </div>
+                      <Progress
+                        value={(repair.count / repairTypeData[0].count) * 100}
+                        className="h-2"
+                      />
                     </div>
-                    <Progress
-                      value={(repair.count / repairTypeData[0].count) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Recent Transactions */}
         <Card>
@@ -584,7 +587,7 @@ export default function Dashboard() {
                               <div className="font-semibold text-sm sm:text-base">
                                 ₹{transaction.amount.toLocaleString()}
                               </div>
-                              {showProfits && (
+                              {canViewProfits && showProfits && (
                                 <div className="text-xs text-success">
                                   Profit: ₹{transaction.profit.toLocaleString()}
                                 </div>
