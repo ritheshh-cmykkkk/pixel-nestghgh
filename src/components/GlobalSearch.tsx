@@ -1,0 +1,161 @@
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { Search, User, Smartphone, Calendar, DollarSign } from "lucide-react";
+import { Link } from "react-router-dom";
+
+// Mock data for search
+const mockSearchData = [
+  {
+    type: "customer",
+    id: "1",
+    title: "Rajesh Kumar",
+    subtitle: "+91 98765 43210",
+    link: "/transactions",
+    icon: User,
+  },
+  {
+    type: "transaction",
+    id: "TXN001",
+    title: "iPhone 15 Pro Screen Repair",
+    subtitle: "₹8,500 • Completed",
+    link: "/transactions/TXN001",
+    icon: Smartphone,
+  },
+  {
+    type: "transaction",
+    id: "TXN002",
+    title: "Samsung Galaxy S24 Battery",
+    subtitle: "₹3,200 • In Progress",
+    link: "/transactions/TXN002",
+    icon: Smartphone,
+  },
+  {
+    type: "customer",
+    id: "2",
+    title: "Priya Sharma",
+    subtitle: "+91 87654 32109",
+    link: "/transactions",
+    icon: User,
+  },
+];
+
+interface GlobalSearchProps {
+  placeholder?: string;
+  className?: string;
+}
+
+export function GlobalSearch({
+  placeholder = "Search transactions, customers...",
+  className = "",
+}: GlobalSearchProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<typeof mockSearchData>([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery.length > 1) {
+      // Filter mock data based on search query
+      const filtered = mockSearchData.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+      setSearchResults(filtered);
+      setIsOpen(true);
+    } else {
+      setSearchResults([]);
+      setIsOpen(false);
+    }
+  }, [searchQuery]);
+
+  const handleResultClick = () => {
+    setSearchQuery("");
+    setIsOpen(false);
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "customer":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "transaction":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <div className={`relative ${className}`}>
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={placeholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+            onFocus={() => searchQuery.length > 1 && setIsOpen(true)}
+          />
+        </div>
+      </PopoverTrigger>
+      {searchResults.length > 0 && (
+        <PopoverContent
+          className="w-80 p-0"
+          align="start"
+          side="bottom"
+          sideOffset={4}
+        >
+          <div className="border-b p-3">
+            <h4 className="font-medium text-sm">Search Results</h4>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {searchResults.map((result) => {
+              const Icon = result.icon;
+              return (
+                <Link
+                  key={result.id}
+                  to={result.link}
+                  onClick={handleResultClick}
+                  className="flex items-center gap-3 p-3 hover:bg-accent transition-colors border-b last:border-b-0"
+                >
+                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium text-sm truncate">
+                        {result.title}
+                      </p>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${getTypeColor(result.type)}`}
+                      >
+                        {result.type}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {result.subtitle}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          {searchResults.length === 0 && searchQuery.length > 1 && (
+            <div className="p-4 text-center text-sm text-muted-foreground">
+              No results found for "{searchQuery}"
+            </div>
+          )}
+        </PopoverContent>
+      )}
+    </Popover>
+  );
+}

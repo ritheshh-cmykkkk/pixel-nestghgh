@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import {
   BarChart,
   Bar,
@@ -47,7 +48,6 @@ import {
   ShoppingCart,
   Zap,
   FileText,
-  Search,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -227,15 +227,7 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             {/* Global Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search transactions, customers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 sm:h-9 w-full sm:w-64"
-              />
-            </div>
+            <GlobalSearch className="h-10 sm:h-9 w-full sm:w-64" />
             <Button variant="outline" size="sm" className="h-10 sm:h-9">
               <Calendar className="mr-2 h-4 w-4" />
               Today: {new Date().toLocaleDateString()}
