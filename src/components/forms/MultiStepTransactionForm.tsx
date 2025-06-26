@@ -323,26 +323,36 @@ export function MultiStepTransactionForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="deviceModel">{t("device-model")} *</Label>
-                  <Select
-                    onValueChange={(value) => setValue("deviceModel", value)}
-                    defaultValue={watchedValues.deviceModel}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select device model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {deviceModels.map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="deviceModel"
+                    type="text"
+                    placeholder="Enter device model (e.g. iPhone 15 Pro, Samsung Galaxy S24)"
+                    {...register("deviceModel", {
+                      setValueAs: (value: string) => {
+                        // Normalize device model input - remove extra spaces, fix common typos
+                        return value
+                          .trim()
+                          .replace(/\s+/g, " ")
+                          .replace(/iphone/i, "iPhone")
+                          .replace(/samsung/i, "Samsung")
+                          .replace(/galaxy/i, "Galaxy")
+                          .replace(/plus/i, "Plus")
+                          .replace(/pro/i, "Pro")
+                          .replace(/max/i, "Max")
+                          .replace(/mini/i, "Mini");
+                      },
+                    })}
+                    className="h-12"
+                  />
                   {errors.deviceModel && (
                     <p className="text-sm text-destructive">
                       {errors.deviceModel.message}
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    Common models: iPhone 15 Pro, Samsung Galaxy S24, OnePlus
+                    12, Xiaomi 14
+                  </p>
                 </div>
               </div>
             )}
