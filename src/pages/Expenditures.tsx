@@ -76,7 +76,7 @@ const mockExpenditures = [
     id: "EXP001",
     date: "2024-01-15",
     description: "Mobile phone parts purchase",
-    category: "Inventory",
+    category: "Supplies",
     amount: 15000,
     paymentMethod: "bank_transfer",
     supplier: "TechParts Solutions",
@@ -131,7 +131,7 @@ const mockExpenditures = [
 
 // Chart data
 const categoryData = [
-  { name: "Inventory", amount: 15000, color: "#3B82F6" },
+  { name: "Supplies", amount: 15000, color: "#3B82F6" },
   { name: "Rent", amount: 25000, color: "#EF4444" },
   { name: "Utilities", amount: 3500, color: "#F59E0B" },
   { name: "Salaries", amount: 18000, color: "#10B981" },
@@ -238,8 +238,7 @@ export default function Expenditures() {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      Inventory:
-        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+      Supplies: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       Rent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
       Utilities:
         "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
@@ -554,7 +553,7 @@ export default function Expenditures() {
 function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
   const [formData, setFormData] = useState({
     description: "",
-    category: "Inventory",
+    category: "Supplies",
     amount: "",
     paymentMethod: "cash",
     supplier: "",
@@ -569,7 +568,7 @@ function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
     });
     setFormData({
       description: "",
-      category: "Inventory",
+      category: "Supplies",
       amount: "",
       paymentMethod: "cash",
       supplier: "",
@@ -608,7 +607,7 @@ function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Inventory">Inventory</SelectItem>
+              <SelectItem value="Supplies">Supplies</SelectItem>
               <SelectItem value="Rent">Rent</SelectItem>
               <SelectItem value="Utilities">Utilities</SelectItem>
               <SelectItem value="Salaries">Salaries</SelectItem>

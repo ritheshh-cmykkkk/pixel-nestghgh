@@ -19,7 +19,6 @@ const translations = {
     // Navigation
     dashboard: "Dashboard",
     transactions: "Transactions",
-    inventory: "Inventory",
     suppliers: "Suppliers",
     expenditures: "Expenditures",
     bills: "Bills",
@@ -29,11 +28,9 @@ const translations = {
     // Dashboard
     "today-revenue": "Today's Revenue",
     "pending-repairs": "Pending Repairs",
-    "inventory-alerts": "Inventory Alerts",
     "quick-actions": "Quick Actions",
     "recent-transactions": "Recent Transactions",
     "new-transaction": "New Transaction",
-    "add-inventory": "Add Inventory",
     "record-payment": "Record Payment",
 
     // Transactions
@@ -108,7 +105,6 @@ const translations = {
     // Navigation
     dashboard: "డాష్‌బోర్డ్",
     transactions: "లావాదేవీలు",
-    inventory: "నిల్వ",
     suppliers: "సరఫరాదారులు",
     expenditures: "ఖర్చులు",
     bills: "బిల్లులు",
@@ -118,12 +114,10 @@ const translations = {
     // Dashboard
     "today-revenue": "నేటి ఆదాయం",
     "pending-repairs": "పెండింగ్ రిపేర్లు",
-    "inventory-alerts": "స్టాక్ అలర్ట్‌లు",
     "quick-actions": "త్వరిత చర్యలు",
     "recent-transactions": "ఇటీవలి లావాదేవీలు",
     "new-transaction": "కొత్త లావాదేవీ",
-    "add-inventory": "స్టాక్ జోడించు",
-    "record-payment": "చెల్లింపు రికార్డ్",
+    "record-payment": "చెల్లింపు రికార్���్",
 
     // Transactions
     "customer-details": "కస్టమర్ వివరాలు",
@@ -152,7 +146,7 @@ const translations = {
     delete: "తొలగించు",
     search: "వెతుకు",
     filter: "ఫిల్టర్",
-    export: "ఎక్స్‌పోర్ట్",
+    export: "ఎక్స్‌పోర్���్",
     print: "ప్రింట్",
     send: "పంపు",
     back: "వెనుకకు",

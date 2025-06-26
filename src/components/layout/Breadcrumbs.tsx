@@ -8,7 +8,6 @@ const routeLabels: Record<string, string> = {
   transactions: "transactions",
   new: "new-transaction",
   edit: "edit",
-  inventory: "inventory",
   suppliers: "suppliers",
   expenditures: "expenditures",
   bills: "bills",

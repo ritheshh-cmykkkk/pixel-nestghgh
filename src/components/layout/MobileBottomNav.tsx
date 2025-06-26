@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth, type UserRole } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   CreditCard,
-  Package,
+  Users,
   Receipt,
   Settings,
 } from "lucide-react";
@@ -15,32 +16,38 @@ const mobileNavigation = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
+    name: "suppliers",
+    href: "/suppliers",
+    icon: Users,
+    roles: ["admin", "owner"] as UserRole[],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
+    roles: ["admin", "owner", "worker"] as UserRole[],
   },
 ];
 
 export function MobileBottomNav() {
   const location = useLocation();
   const { t } = useLanguage();
+  const { hasAccess } = useAuth();
 
   const isActive = (item: (typeof mobileNavigation)[0]) => {
     if (item.exact) {
@@ -49,10 +56,19 @@ export function MobileBottomNav() {
     return location.pathname.startsWith(item.href);
   };
 
+  const visibleNavigation = mobileNavigation.filter((item) =>
+    hasAccess(item.roles),
+  );
+
   return (
     <nav className="mobile-nav fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur border-t border-border safe-area-bottom">
-      <div className="grid grid-cols-5 px-2 py-2">
-        {mobileNavigation.map((item) => (
+      <div
+        className={`grid px-2 py-2`}
+        style={{
+          gridTemplateColumns: `repeat(${visibleNavigation.length}, 1fr)`,
+        }}
+      >
+        {visibleNavigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}

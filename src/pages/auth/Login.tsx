@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,25 +21,49 @@ import {
   Zap,
   Shield,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsLoading(true);
-    // Mock login delay
-    setTimeout(() => {
+
+    try {
+      const success = await login(formData.username, formData.password);
+      if (success) {
+        toast({
+          title: "Welcome back!",
+          description: "Login successful",
+        });
+        navigate("/");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid username or password. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during login.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      // Redirect to dashboard (UI only)
-      window.location.href = "/";
-    }, 2000);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -57,7 +81,7 @@ export default function Login() {
               <Smartphone className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Expenso</h1>
+              <h1 className="text-2xl font-bold">Call Me Mobiles</h1>
               <p className="text-white/80 text-sm">Mobile Repair Tracker</p>
             </div>
           </div>
@@ -66,8 +90,8 @@ export default function Login() {
             Streamline your mobile repair business
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-md">
-            Track repairs, manage inventory, handle suppliers, and generate
-            detailed reports for your mobile repair shop.
+            Track repairs, manage suppliers, and generate detailed reports for
+            your mobile repair shop.
           </p>
 
           <div className="space-y-4">
@@ -84,7 +108,7 @@ export default function Login() {
                 <Zap className="h-4 w-4 text-white" />
               </div>
               <span className="text-white/90">
-                Inventory & supplier management
+                Supplier & customer management
               </span>
             </div>
             <div className="flex items-center space-x-3">
@@ -108,7 +132,9 @@ export default function Login() {
               <Smartphone className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Expenso</h1>
+              <h1 className="text-xl font-bold text-foreground">
+                Call Me Mobiles
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Mobile Repair Tracker
               </p>
@@ -127,13 +153,15 @@ export default function Login() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="admin@repairshop.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    id="username"
+                    type="text"
+                    placeholder="username"
+                    value={formData.username}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
                     required
                     className="h-11"
                   />
@@ -208,12 +236,12 @@ export default function Login() {
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-center text-sm text-muted-foreground">
                 Need help with your account?{" "}
-                <Link
-                  to="/support"
+                <a
+                  href="tel:+919392404104"
                   className="text-primary hover:underline font-medium"
                 >
-                  Contact Support
-                </Link>
+                  Call Support
+                </a>
               </div>
             </CardFooter>
           </Card>

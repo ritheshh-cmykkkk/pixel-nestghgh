@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { apiClient } from "@/lib/api";
 import {
   BarChart,
   Bar,
@@ -46,7 +49,7 @@ import {
   Zap,
   FileText,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
@@ -201,7 +204,6 @@ export default function Dashboard() {
   const todayRevenue = 51300;
   const todayProfit = showProfits ? 20520 : null;
   const pendingRepairs = 7;
-  const inventoryAlerts = lowStockItems.filter((item) => item.critical).length;
   const weeklyTotal = weeklyRevenue.reduce((sum, day) => sum + day.revenue, 0);
   const weeklyProfitTotal = showProfits
     ? weeklyRevenue.reduce((sum, day) => sum + day.profit, 0)
@@ -217,32 +219,39 @@ export default function Dashboard() {
               {t("dashboard")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Welcome back! Here's your repair shop overview for today.
+              Welcome back, {user?.name}!{" "}
+              {user?.role === "worker"
+                ? "Here are your daily tasks."
+                : "Here's your repair shop overview for today."}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
+            {/* Global Search */}
+            <GlobalSearch className="h-10 sm:h-9 w-full sm:w-64" />
             <Button variant="outline" size="sm" className="h-10 sm:h-9">
               <Calendar className="mr-2 h-4 w-4" />
               Today: {new Date().toLocaleDateString()}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
-              ) : (
-                <Eye className="mr-2 h-4 w-4" />
-              )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
+            {canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
           <Card className="card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -254,7 +263,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-success">
                 ₹{todayRevenue.toLocaleString()}
               </div>
-              {showProfits && todayProfit && (
+              {canViewProfits && showProfits && todayProfit && (
                 <div className="text-sm text-muted-foreground">
                   Profit: ₹{todayProfit.toLocaleString()}
                 </div>
@@ -279,23 +288,6 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center text-xs text-muted-foreground">
                 5 in progress, 2 new
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("inventory-alerts")}
-              </CardTitle>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {inventoryAlerts}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                Critical stock items
               </div>
             </CardContent>
           </Card>
@@ -344,215 +336,166 @@ export default function Dashboard() {
                 <span className="text-xs">{t("new-transaction")}</span>
               </Button>
             </Link>
-            <Link to="/inventory">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <Package className="h-6 w-6" />
-                <span className="text-xs">{t("add-inventory")}</span>
-              </Button>
-            </Link>
             <Button variant="outline" className="h-20 flex flex-col gap-2">
               <CreditCard className="h-6 w-6" />
               <span className="text-xs">{t("record-payment")}</span>
             </Button>
-            <Link to="/suppliers">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <Users className="h-6 w-6" />
-                <span className="text-xs">Add Supplier</span>
-              </Button>
-            </Link>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <ShoppingCart className="h-6 w-6" />
-              <span className="text-xs">Order Parts</span>
-            </Button>
-            <Link to="/reports">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col gap-2 w-full"
-              >
-                <FileText className="h-6 w-6" />
-                <span className="text-xs">View Reports</span>
-              </Button>
-            </Link>
+            {hasAccess(["admin", "owner"]) && (
+              <>
+                <Link to="/suppliers">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Users className="h-6 w-6" />
+                    <span className="text-xs">Add Supplier</span>
+                  </Button>
+                </Link>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <ShoppingCart className="h-6 w-6" />
+                  <span className="text-xs">Order Parts</span>
+                </Button>
+                <Link to="/reports">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span className="text-xs">View Reports</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </CardContent>
         </Card>
 
-        {/* Charts and Low Stock */}
-        <div className="grid gap-4 lg:grid-cols-7">
-          <Card className="lg:col-span-4">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Weekly Revenue & Profit
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Revenue, repairs, and profit trends for this week
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-2 sm:px-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={weeklyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      `₹${value.toLocaleString()}`,
-                      name === "revenue" ? "Revenue" : "Profit",
-                    ]}
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    fill="hsl(var(--primary))"
-                    name="revenue"
-                  />
-                  {showProfits && (
-                    <Bar
-                      dataKey="profit"
-                      fill="hsl(var(--success))"
-                      name="profit"
-                    />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-3">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
+        {/* Charts - Only for Admin and Owner */}
+        {hasAccess(["admin", "owner"]) && (
+          <div className="grid gap-4 lg:grid-cols-1">
+            <Card>
+              <CardHeader className="pb-4">
                 <CardTitle className="text-lg sm:text-xl">
-                  Low Stock Alerts
+                  Weekly Revenue & Profit
                 </CardTitle>
-                <Badge variant="destructive" className="text-xs">
-                  {inventoryAlerts} critical
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {lowStockItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg border"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {item.item}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-muted-foreground">
-                          Stock: {item.stock}/{item.minStock}
-                        </p>
-                        <Progress
-                          value={(item.stock / item.minStock) * 100}
-                          className="h-1.5 flex-1"
-                        />
-                      </div>
-                    </div>
-                    <Badge
-                      variant={item.critical ? "destructive" : "warning"}
-                      className="text-xs ml-2"
-                    >
-                      {item.critical ? t("critical") : t("low")}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-              <Link to="/inventory">
-                <Button variant="outline" className="w-full mt-4">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Manage Inventory
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Repair Types Analysis */}
-        <div className="grid gap-4 lg:grid-cols-7">
-          <Card className="lg:col-span-3">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Repair Type Distribution
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Most common repairs this month
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={repairTypeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="count"
-                  >
-                    {repairTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                {repairTypeData.map((type, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: type.color }}
+                <CardDescription className="text-sm">
+                  Revenue, repairs, and profit trends for this week
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={weeklyRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip
+                      formatter={(value, name) => [
+                        `₹${value.toLocaleString()}`,
+                        name === "revenue" ? "Revenue" : "Profit",
+                      ]}
                     />
-                    <span className="text-xs text-muted-foreground">
-                      {type.type}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    <Bar
+                      dataKey="revenue"
+                      fill="hsl(var(--primary))"
+                      name="revenue"
+                    />
+                    {canViewProfits && showProfits && (
+                      <Bar
+                        dataKey="profit"
+                        fill="hsl(var(--success))"
+                        name="profit"
+                      />
+                    )}
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-          <Card className="lg:col-span-4">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Repair Performance
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Count and revenue by repair type
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {repairTypeData.map((repair, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-sm">{repair.type}</span>
-                      <div className="text-right">
-                        <span className="text-sm font-semibold">
-                          {repair.count} repairs
+        {/* Repair Types Analysis - Only for Admin and Owner */}
+        {hasAccess(["admin", "owner"]) && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Repair Type Distribution
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Most common repairs this month
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={repairTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="count"
+                    >
+                      {repairTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {repairTypeData.map((type, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: type.color }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {type.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-4">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Repair Performance
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Count and revenue by repair type
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {repairTypeData.map((repair, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-sm">
+                          {repair.type}
                         </span>
-                        <div className="text-xs text-muted-foreground">
-                          ₹{repair.revenue.toLocaleString()}
+                        <div className="text-right">
+                          <span className="text-sm font-semibold">
+                            {repair.count} repairs
+                          </span>
+                          <div className="text-xs text-muted-foreground">
+                            ₹{repair.revenue.toLocaleString()}
+                          </div>
                         </div>
                       </div>
+                      <Progress
+                        value={(repair.count / repairTypeData[0].count) * 100}
+                        className="h-2"
+                      />
                     </div>
-                    <Progress
-                      value={(repair.count / repairTypeData[0].count) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Recent Transactions */}
         <Card>
@@ -636,7 +579,7 @@ export default function Dashboard() {
                               <div className="font-semibold text-sm sm:text-base">
                                 ₹{transaction.amount.toLocaleString()}
                               </div>
-                              {showProfits && (
+                              {canViewProfits && showProfits && (
                                 <div className="text-xs text-success">
                                   Profit: ₹{transaction.profit.toLocaleString()}
                                 </div>
