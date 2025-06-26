@@ -55,107 +55,61 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-    category: "Displays",
-  },
-  {
-    id: "SUP004",
-    name: "Battery Pro Solutions",
-    contactPerson: "Sneha Reddy",
-    phone: "+91 65432 10987",
-    email: "sneha@batterypro.in",
-    address: "321 Power Lane, Bangalore",
-    outstandingAmount: 8750,
-    totalPurchases: 67500,
-    lastOrderDate: "2024-01-08",
-    status: "inactive",
-    paymentTerms: "30 days",
-    category: "Batteries",
-  },
-];
 
 export default function Suppliers() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [suppliers, setSuppliers] = useState(defaultSuppliers);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
-  const [suppliers, setSuppliers] = useState(mockSuppliers);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   // Filter suppliers based on search and status
   const filteredSuppliers = suppliers.filter((supplier) => {
-    const matchesSearch =
-      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.email.toLowerCase().includes(searchTerm.toLowerCase());
-
+    const matchesSearch = supplier.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || supplier.status === statusFilter;
-
     return matchesSearch && matchesStatus;
   });
 
-  // Calculate summary statistics
+  // Calculate totals
   const totalSuppliers = suppliers.length;
   const activeSuppliers = suppliers.filter((s) => s.status === "active").length;
   const totalOutstanding = suppliers.reduce(
-    (sum, s) => sum + s.outstandingAmount,
+    (sum, supplier) => sum + supplier.outstandingAmount,
     0,
   );
   const totalPurchases = suppliers.reduce(
-    (sum, s) => sum + s.totalPurchases,
+    (sum, supplier) => sum + supplier.totalPurchases,
     0,
   );
 
-  const handleAddSupplier = (formData: any) => {
-    const newSupplier = {
+  const handleAddSupplier = (newSupplier: any) => {
+    const supplier = {
+      ...newSupplier,
       id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
-      ...formData,
-      outstandingAmount: 0,
       totalPurchases: 0,
+      outstandingAmount: 0,
       lastOrderDate: new Date().toISOString().split("T")[0],
       status: "active",
     };
-    setSuppliers([...suppliers, newSupplier]);
-    setIsAddDialogOpen(false);
+    setSuppliers([...suppliers, supplier]);
+    setShowAddDialog(false);
     toast({
       title: "Supplier Added",
-      description: "New supplier has been added successfully.",
+      description: `${supplier.name} has been added successfully.`,
     });
   };
 
-  const handleRecordPayment = (supplierId: string, amount: number) => {
-    setSuppliers(
-      suppliers.map((supplier) =>
-        supplier.id === supplierId
-          ? {
-              ...supplier,
-              outstandingAmount: Math.max(
-                0,
-                supplier.outstandingAmount - amount,
-              ),
-            }
-          : supplier,
-      ),
+  const openWhatsApp = (phone: string, name: string) => {
+    const message = encodeURIComponent(
+      `Hello ${name}, I hope you're doing well. I wanted to check on our recent orders and discuss any pending items.`,
     );
-    setIsPaymentDialogOpen(false);
-    setSelectedSupplier(null);
-    toast({
-      title: "Payment Recorded",
-      description: `Payment of ₹${amount.toLocaleString()} has been recorded.`,
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "inactive":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
+    window.open(
+      `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${message}`,
+    );
   };
 
   return (
@@ -168,15 +122,15 @@ export default function Suppliers() {
               {t("suppliers")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage supplier relationships and outstanding payments
+              Manage your supplier relationships and track purchases
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2">
             <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
-              {t("export")}
+              Export
             </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
@@ -189,7 +143,7 @@ export default function Suppliers() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -246,7 +200,7 @@ export default function Suppliers() {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Suppliers Table */}
         <Card>
           <CardHeader>
             <CardTitle>Suppliers</CardTitle>
@@ -278,7 +232,6 @@ export default function Suppliers() {
               </Select>
             </div>
 
-            {/* Suppliers Table */}
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -299,18 +252,34 @@ export default function Suppliers() {
                         <div>
                           <div className="font-medium">{supplier.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {supplier.id}
+                            {supplier.contactPerson}
+                          </div>
+                          <div className="text-xs text-muted-foreground flex items-center mt-1">
+                            <MapPin className="mr-1 h-3 w-3" />
+                            {supplier.address}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {supplier.contactPerson}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
+                        <div className="space-y-1">
+                          <div className="flex items-center text-sm">
+                            <Phone className="mr-1 h-3 w-3" />
                             {supplier.phone}
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              openWhatsApp(
+                                supplier.whatsapp,
+                                supplier.contactPerson,
+                              )
+                            }
+                            className="h-6 text-xs"
+                          >
+                            <MessageCircle className="mr-1 h-3 w-3" />
+                            WhatsApp
+                          </Button>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -318,18 +287,39 @@ export default function Suppliers() {
                           ₹{supplier.outstandingAmount.toLocaleString()}
                         </div>
                         {supplier.outstandingAmount > 0 && (
-                          <div className="text-xs text-red-600 flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            Payment due
-                          </div>
+                          <Badge variant="destructive" className="text-xs mt-1">
+                            <AlertCircle className="mr-1 h-3 w-3" />
+                            Due
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell>
-                        ₹{supplier.totalPurchases.toLocaleString()}
+                        <div className="font-medium">
+                          ₹{supplier.totalPurchases.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {supplier.category}
+                        </div>
                       </TableCell>
-                      <TableCell>{supplier.lastOrderDate}</TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(supplier.status)}>
+                        <div className="flex items-center text-sm">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {new Date(
+                            supplier.lastOrderDate,
+                          ).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {supplier.paymentTerms}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            supplier.status === "active"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
                           {supplier.status}
                         </Badge>
                       </TableCell>
@@ -340,19 +330,9 @@ export default function Suppliers() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                          {supplier.outstandingAmount > 0 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedSupplier(supplier);
-                                setIsPaymentDialogOpen(true);
-                              }}
-                            >
-                              <DollarSign className="mr-1 h-4 w-4" />
-                              Pay
-                            </Button>
-                          )}
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -362,25 +342,6 @@ export default function Suppliers() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Payment Dialog */}
-        <Dialog
-          open={isPaymentDialogOpen}
-          onOpenChange={setIsPaymentDialogOpen}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Record Payment</DialogTitle>
-              <DialogDescription>
-                Record a payment for {selectedSupplier?.name}
-              </DialogDescription>
-            </DialogHeader>
-            <PaymentDialog
-              supplier={selectedSupplier}
-              onPayment={handleRecordPayment}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
     </AppLayout>
   );
@@ -392,7 +353,7 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
     name: "",
     contactPerson: "",
     phone: "",
-    email: "",
+    whatsapp: "",
     address: "",
     paymentTerms: "30 days",
     category: "Electronics",
@@ -405,7 +366,7 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
       name: "",
       contactPerson: "",
       phone: "",
-      email: "",
+      whatsapp: "",
       address: "",
       paymentTerms: "30 days",
       category: "Electronics",
@@ -427,6 +388,7 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
             id="name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Company name"
             required
           />
         </div>
@@ -438,6 +400,7 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
             onChange={(e) =>
               setFormData({ ...formData, contactPerson: e.target.value })
             }
+            placeholder="Primary contact name"
             required
           />
         </div>
@@ -445,23 +408,23 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
           <Label htmlFor="phone">Phone</Label>
           <Input
             id="phone"
-            type="tel"
             value={formData.phone}
             onChange={(e) =>
               setFormData({ ...formData, phone: e.target.value })
             }
+            placeholder="+91 98765 43210"
             required
           />
         </div>
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="whatsapp">WhatsApp</Label>
           <Input
-            id="email"
-            type="email"
-            value={formData.email}
+            id="whatsapp"
+            value={formData.whatsapp}
             onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
+              setFormData({ ...formData, whatsapp: e.target.value })
             }
+            placeholder="+91 98765 43210"
             required
           />
         </div>
@@ -473,6 +436,7 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
             onChange={(e) =>
               setFormData({ ...formData, address: e.target.value })
             }
+            placeholder="Business address"
             required
           />
         </div>
@@ -490,29 +454,13 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
             <SelectContent>
               <SelectItem value="Electronics">Electronics</SelectItem>
               <SelectItem value="Parts">Parts</SelectItem>
-              <SelectItem value="Displays">Displays</SelectItem>
-              <SelectItem value="Batteries">Batteries</SelectItem>
-              <SelectItem value="Tools">Tools</SelectItem>
-              <SelectItem value="Accessories">Accessories</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="paymentTerms">Payment Terms</Label>
-          <Select
-            value={formData.paymentTerms}
-            onValueChange={(value) =>
-              setFormData({ ...formData, paymentTerms: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="15 days">15 days</SelectItem>
-              <SelectItem value="30 days">30 days</SelectItem>
-              <SelectItem value="45 days">45 days</SelectItem>
-              <SelectItem value="60 days">60 days</SelectItem>
+              <SelectItem value="Screen & Display">Screen & Display</SelectItem>
+              <SelectItem value="Batteries & Charging">
+                Batteries & Charging
+              </SelectItem>
+              <SelectItem value="Tools & Equipment">
+                Tools & Equipment
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -521,80 +469,5 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
         </DialogFooter>
       </form>
     </DialogContent>
-  );
-}
-
-// Payment Dialog Component
-function PaymentDialog({
-  supplier,
-  onPayment,
-}: {
-  supplier: any;
-  onPayment: (supplierId: string, amount: number) => void;
-}) {
-  const [amount, setAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [notes, setNotes] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const paymentAmount = parseFloat(amount);
-    if (paymentAmount > 0 && paymentAmount <= supplier?.outstandingAmount) {
-      onPayment(supplier.id, paymentAmount);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>Outstanding Amount</Label>
-        <div className="text-lg font-semibold text-red-600">
-          ₹{supplier?.outstandingAmount?.toLocaleString()}
-        </div>
-      </div>
-      <div>
-        <Label htmlFor="amount">Payment Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          max={supplier?.outstandingAmount}
-          min="0"
-          step="0.01"
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="paymentMethod">Payment Method</Label>
-        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cash">Cash</SelectItem>
-            <SelectItem value="upi">UPI</SelectItem>
-            <SelectItem value="card">Card</SelectItem>
-            <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-            <SelectItem value="check">Check</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="notes">Notes (Optional)</Label>
-        <Input
-          id="notes"
-          placeholder="Payment notes..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
-      <DialogFooter>
-        <Button type="submit" disabled={!amount || parseFloat(amount) <= 0}>
-          Record Payment
-        </Button>
-      </DialogFooter>
-    </form>
   );
 }
