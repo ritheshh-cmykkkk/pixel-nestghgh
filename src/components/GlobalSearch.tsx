@@ -7,10 +7,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Smartphone, Calendar, DollarSign } from "lucide-react";
+import { Search, User, Smartphone, Calendar, DollarSign, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { apiClient } from "@/lib/api";
 
-// Mock data for search
+// Mock data for search (fallback)
 const mockSearchData = [
   {
     type: "customer",
@@ -58,21 +59,50 @@ export function GlobalSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof mockSearchData>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (searchQuery.length > 1) {
-      // Filter mock data based on search query
-      const filtered = mockSearchData.filter(
-        (item) =>
-          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.id.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-      setSearchResults(filtered);
-      setIsOpen(true);
+      const performSearch = async () => {
+        setIsSearching(true);
+        try {
+          // Try backend search first
+          const backendResults = await apiClient.request(`/search?q=${encodeURIComponent(searchQuery)}`);
+
+          // Transform backend results to match our format
+          const transformedResults = backendResults.map((item: any) => ({
+            type: item.type || "transaction",
+            id: item.id,
+            title: item.title || item.customerName || item.name,
+            subtitle: item.subtitle || `${item.deviceModel} • ₹${item.amount}` || item.phone,
+            link: item.type === "customer" ? "/transactions" : `/transactions/${item.id}`,
+            icon: item.type === "customer" ? User : Smartphone,
+          }));
+
+          setSearchResults(transformedResults);
+        } catch (error) {
+          console.warn('Backend search failed, using local search:', error);
+          // Fallback to local search
+          const filtered = mockSearchData.filter(
+            (item) =>
+              item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.id.toLowerCase().includes(searchQuery.toLowerCase()),
+          );
+          setSearchResults(filtered);
+        } finally {
+          setIsSearching(false);
+          setIsOpen(true);
+        }
+      };
+
+      // Debounce search
+      const debounceTimer = setTimeout(performSearch, 300);
+      return () => clearTimeout(debounceTimer);
     } else {
       setSearchResults([]);
       setIsOpen(false);
+      setIsSearching(false);
     }
   }, [searchQuery]);
 
@@ -114,10 +144,18 @@ export function GlobalSearch({
           sideOffset={4}
         >
           <div className="border-b p-3">
-            <h4 className="font-medium text-sm">Search Results</h4>
+            <h4 className="font-medium text-sm">
+              {isSearching ? "Searching..." : "Search Results"}
+            </h4>
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {searchResults.map((result) => {
+            {isSearching ? (
+              <div className="p-4 text-center">
+                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Searching...</p>
+              </div>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((result) => {
               const Icon = result.icon;
               return (
                 <Link
@@ -146,14 +184,15 @@ export function GlobalSearch({
                     </p>
                   </div>
                 </Link>
-              );
-            })}
+              ))
+            ) : (
+              searchQuery.length > 1 && !isSearching && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No results found for "{searchQuery}"
+                </div>
+              )
+            )}
           </div>
-          {searchResults.length === 0 && searchQuery.length > 1 && (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              No results found for "{searchQuery}"
-            </div>
-          )}
         </PopoverContent>
       )}
     </Popover>
