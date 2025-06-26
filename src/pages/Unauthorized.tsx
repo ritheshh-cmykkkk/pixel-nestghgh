@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ShieldX, Home } from "lucide-react";
+import { ShieldX, Home, Phone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Unauthorized() {
@@ -39,6 +39,15 @@ export default function Unauthorized() {
             </Button>
             <Button onClick={logout} variant="destructive" className="flex-1">
               Switch Account
+            </Button>
+          </div>
+          <div className="pt-4 border-t">
+            <p className="text-xs text-muted-foreground mb-2">Need help?</p>
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <a href="tel:+919392404104">
+                <Phone className="mr-2 h-4 w-4" />
+                Call Support: 9392404104
+              </a>
             </Button>
           </div>
         </CardContent>
