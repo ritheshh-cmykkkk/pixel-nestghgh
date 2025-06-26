@@ -96,10 +96,11 @@ const deviceModels = [
 ];
 
 const suppliers = [
-  "TechParts Ltd",
-  "Mobile Components Inc",
-  "Repair Supply Co",
-  "Digital Parts Hub",
+  "Patel Electronics",
+  "Mahalaxmi Components",
+  "Rathod Mobile Parts",
+  "Sri Ramdev Suppliers",
+  "Hub Technologies",
   "Other",
 ];
 
