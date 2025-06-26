@@ -191,7 +191,7 @@ export default function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@repairshop.com"
+                    placeholder="Use: admin@expenso.com / owner@expenso.com / worker@expenso.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
@@ -303,12 +303,12 @@ export default function Login() {
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-center text-sm text-muted-foreground">
                 Need help with your account?{" "}
-                <Link
-                  to="/support"
+                <a
+                  href="tel:+919392404104"
                   className="text-primary hover:underline font-medium"
                 >
-                  Contact Support
-                </Link>
+                  Call Support: 9392404104
+                </a>
               </div>
             </CardFooter>
           </Card>

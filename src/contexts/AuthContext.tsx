@@ -46,12 +46,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     role: UserRole,
   ): Promise<boolean> => {
-    // Mock authentication - in real app, this would call an API
-    if (email && password) {
+    // Fixed user credentials - users cannot change these
+    const fixedUsers = {
+      admin: { id: "ADM001", email: "admin@expenso.com", name: "System Admin" },
+      owner: { id: "OWN001", email: "owner@expenso.com", name: "Shop Owner" },
+      worker: {
+        id: "WRK001",
+        email: "worker@expenso.com",
+        name: "Shop Worker",
+      },
+    };
+
+    // Simple authentication - in production, this would be more secure
+    if (email && password && fixedUsers[role]) {
       const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name: email.split("@")[0],
+        ...fixedUsers[role],
         role,
       };
 

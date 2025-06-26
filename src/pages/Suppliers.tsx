@@ -35,12 +35,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { defaultSuppliers } from "@/data/suppliers";
 import {
   Users,
   Plus,
   DollarSign,
   Phone,
-  Mail,
+  MessageCircle,
   Download,
   Search,
   Filter,
@@ -54,49 +55,6 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock supplier data
-const mockSuppliers = [
-  {
-    id: "SUP001",
-    name: "TechParts Solutions",
-    contactPerson: "Rajesh Kumar",
-    phone: "+91 98765 43210",
-    email: "rajesh@techparts.com",
-    address: "123 Electronics Market, Hyderabad",
-    outstandingAmount: 25000,
-    totalPurchases: 245000,
-    lastOrderDate: "2024-01-15",
-    status: "active",
-    paymentTerms: "30 days",
-    category: "Electronics",
-  },
-  {
-    id: "SUP002",
-    name: "Mobile Components Ltd",
-    contactPerson: "Priya Sharma",
-    phone: "+91 87654 32109",
-    email: "priya@mobilecomponents.in",
-    address: "456 Tech Plaza, Mumbai",
-    outstandingAmount: 0,
-    totalPurchases: 180000,
-    lastOrderDate: "2024-01-12",
-    status: "active",
-    paymentTerms: "15 days",
-    category: "Parts",
-  },
-  {
-    id: "SUP003",
-    name: "Screen Masters",
-    contactPerson: "Amit Patel",
-    phone: "+91 76543 21098",
-    email: "amit@screenmasters.com",
-    address: "789 Display Street, Delhi",
-    outstandingAmount: 12500,
-    totalPurchases: 95000,
-    lastOrderDate: "2024-01-10",
-    status: "active",
-    paymentTerms: "45 days",
     category: "Displays",
   },
   {
