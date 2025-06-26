@@ -185,13 +185,11 @@ export function GlobalSearch({
                   </div>
                 </Link>
               ))
-            ) : (
-              searchQuery.length > 1 && !isSearching && (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  No results found for "{searchQuery}"
-                </div>
-              )
-            )}
+            ) : searchQuery.length > 1 && !isSearching ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                No results found for "{searchQuery}"
+              </div>
+            ) : null}
           </div>
         </PopoverContent>
       )}
