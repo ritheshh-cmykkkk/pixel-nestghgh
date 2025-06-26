@@ -157,7 +157,7 @@ export default function Login() {
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Use: admin / owner / worker"
+                    placeholder="username"
                     value={formData.username}
                     onChange={(e) =>
                       handleInputChange("username", e.target.value)
@@ -240,13 +240,13 @@ export default function Login() {
                 </p>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   <div>
-                    <strong>Admin:</strong> admin / admin123
+                    <strong>Admin (Rajashekar):</strong> admin / admin123
                   </div>
                   <div>
-                    <strong>Owner:</strong> owner / owner123
+                    <strong>Owner:</strong> owner / owner456
                   </div>
                   <div>
-                    <strong>Worker:</strong> worker / worker123
+                    <strong>Worker (Sravan):</strong> worker / worker123
                   </div>
                 </div>
               </div>

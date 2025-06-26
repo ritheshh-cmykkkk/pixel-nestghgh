@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         admin: {
           id: "ADMIN001",
           email: "admin@callmemobiles.com",
-          name: "System Administrator",
+          name: "Rajashekar",
           username: "admin",
           password: "admin123",
         },
@@ -94,12 +94,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: "owner@callmemobiles.com",
           name: "Shop Owner",
           username: "owner",
-          password: "owner123",
+          password: "owner456",
         },
         worker: {
           id: "WORKER001",
           email: "worker@callmemobiles.com",
-          name: "Shop Worker",
+          name: "Sravan",
           username: "worker",
           password: "worker123",
         },
