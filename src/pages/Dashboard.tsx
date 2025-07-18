@@ -580,29 +580,41 @@ export default function Dashboard() {
           <CardContent>
             {repairTypeData.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={repairTypeData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="count"
-                    >
-                      {repairTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number, name: string, props: any) => [
-                        `${value} repairs`,
-                        props.payload.type,
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="chart-high-contrast">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={repairTypeData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="count"
+                        stroke="hsl(var(--background))"
+                        strokeWidth={2}
+                      >
+                        {repairTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "2px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                          color: "hsl(var(--foreground))",
+                          fontWeight: 500,
+                        }}
+                        formatter={(
+                          value: number,
+                          name: string,
+                          props: any,
+                        ) => [`${value} repairs`, props.payload.type]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
                 <div className="mt-4 space-y-2">
                   {repairTypeData.slice(0, 4).map((item) => (
                     <div
