@@ -98,32 +98,15 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
+      const isDemoMode = localStorage.getItem("demo_mode") === "true";
 
-      // Load dashboard statistics
-      const stats = await StatisticsService.getDashboardStats("month");
-      setDashboardStats(stats);
-
-      // Load recent transactions
-      const transactionsResponse = await TransactionService.getAll({
-        limit: 5,
-        page: 1,
-      });
-      setRecentTransactions(transactionsResponse.transactions);
-
-      // Load revenue data (you might want to get this from a different endpoint)
-      // For now, we'll generate some sample data based on stats
-      const weeklyData = generateWeeklyData(stats);
-      setWeeklyRevenue(weeklyData);
-
-      // Load repair type data
-      const repairStats = await StatisticsService.getRepairStats();
-      const repairChartData = repairStats.repair_types.map((type, index) => ({
-        type: type.type,
-        count: type.count,
-        revenue: type.revenue,
-        color: getRepairTypeColor(index),
-      }));
-      setRepairTypeData(repairChartData);
+      if (isDemoMode) {
+        // Load demo data without API calls
+        await loadDemoData();
+      } else {
+        // Load real data from API
+        await loadRealData();
+      }
 
       setLastUpdated(new Date());
     } catch (error: any) {
@@ -140,6 +123,155 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadDemoData = async () => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // Mock dashboard statistics
+    const mockStats: DashboardStats = {
+      revenue: {
+        today: 15420,
+        yesterday: 12300,
+        this_month: 384500,
+        last_month: 342800,
+        growth_percentage: 12.2,
+      },
+      transactions: {
+        today: 8,
+        pending: 3,
+        completed: 23,
+        total_this_month: 89,
+        growth_percentage: 8.5,
+      },
+      customers: {
+        total: 156,
+        new_this_month: 12,
+        active: 134,
+        growth_percentage: 15.3,
+      },
+      bills: {
+        pending: 5,
+        overdue: 2,
+        paid_this_month: 67,
+        total_amount_pending: 28400,
+      },
+    };
+    setDashboardStats(mockStats);
+
+    // Mock weekly revenue data
+    const mockWeeklyData: ChartData[] = [
+      { day: "Mon", revenue: 12400, repairs: 6, profit: 4200 },
+      { day: "Tue", revenue: 15600, repairs: 8, profit: 5300 },
+      { day: "Wed", revenue: 18200, repairs: 9, profit: 6100 },
+      { day: "Thu", revenue: 14800, repairs: 7, profit: 4900 },
+      { day: "Fri", revenue: 21300, repairs: 11, profit: 7200 },
+      { day: "Sat", revenue: 25600, repairs: 14, profit: 8500 },
+      { day: "Sun", revenue: 19100, repairs: 10, profit: 6400 },
+    ];
+    setWeeklyRevenue(mockWeeklyData);
+
+    // Mock repair type data
+    const mockRepairTypes: RepairTypeData[] = [
+      {
+        type: "Screen Replacement",
+        count: 34,
+        revenue: 102000,
+        color: "#3b82f6",
+      },
+      {
+        type: "Battery Replacement",
+        count: 28,
+        revenue: 56000,
+        color: "#dc2626",
+      },
+      { type: "Charging Port", count: 18, revenue: 45000, color: "#16a34a" },
+      { type: "Speaker Repair", count: 12, revenue: 24000, color: "#ca8a04" },
+      { type: "Camera Repair", count: 8, revenue: 32000, color: "#9333ea" },
+    ];
+    setRepairTypeData(mockRepairTypes);
+
+    // Mock recent transactions
+    const mockTransactions: Transaction[] = [
+      {
+        id: "TXN-001",
+        customer_name: "John Smith",
+        customer_phone: "+1 555-0123",
+        device_model: "iPhone 14 Pro",
+        repair_type: "screen-replacement",
+        cost: 12500,
+        profit: 4500,
+        status: "completed",
+        payment_method: "upi",
+        payment_status: "completed",
+        amount_paid: 12500,
+        free_glass: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "TXN-002",
+        customer_name: "Sarah Johnson",
+        customer_phone: "+1 555-0124",
+        device_model: "Samsung Galaxy S23",
+        repair_type: "battery-replacement",
+        cost: 3500,
+        profit: 1500,
+        status: "in-progress",
+        payment_method: "cash",
+        payment_status: "completed",
+        amount_paid: 3500,
+        free_glass: false,
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "TXN-003",
+        customer_name: "Mike Wilson",
+        customer_phone: "+1 555-0125",
+        device_model: "Google Pixel 7",
+        repair_type: "charging-port",
+        cost: 4500,
+        profit: 2000,
+        status: "pending",
+        payment_method: "card",
+        payment_status: "pending",
+        amount_paid: 0,
+        free_glass: false,
+        created_at: new Date(Date.now() - 7200000).toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ];
+    setRecentTransactions(mockTransactions);
+  };
+
+  const loadRealData = async () => {
+    // Load dashboard statistics
+    const stats = await StatisticsService.getDashboardStats("month");
+    setDashboardStats(stats);
+
+    // Load recent transactions
+    const transactionsResponse = await TransactionService.getAll({
+      limit: 5,
+      page: 1,
+    });
+    setRecentTransactions(transactionsResponse.transactions);
+
+    // Load revenue data (you might want to get this from a different endpoint)
+    // For now, we'll generate some sample data based on stats
+    const weeklyData = generateWeeklyData(stats);
+    setWeeklyRevenue(weeklyData);
+
+    // Load repair type data
+    const repairStats = await StatisticsService.getRepairStats();
+    const repairChartData = repairStats.repair_types.map((type, index) => ({
+      type: type.type,
+      count: type.count,
+      revenue: type.revenue,
+      color: getRepairTypeColor(index),
+    }));
+    setRepairTypeData(repairChartData);
   };
 
   const generateWeeklyData = (stats: DashboardStats): ChartData[] => {
