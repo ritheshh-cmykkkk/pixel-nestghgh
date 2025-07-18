@@ -1,20 +1,14 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,6 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -34,403 +34,54 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  Users,
   Plus,
-  DollarSign,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
   Phone,
   Mail,
-  Download,
-  Search,
-  Filter,
-  Edit,
-  Eye,
   MapPin,
-  Calendar,
-  TrendingUp,
-  AlertCircle,
+  Building,
+  Package,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock supplier data
-const mockSuppliers = [
-  {
-    id: "SUP001",
-    name: "TechParts Solutions",
-    contactPerson: "Rajesh Kumar",
-    phone: "+91 98765 43210",
-    email: "rajesh@techparts.com",
-    address: "123 Electronics Market, Hyderabad",
-    outstandingAmount: 25000,
-    totalPurchases: 245000,
-    lastOrderDate: "2024-01-15",
-    status: "active",
-    paymentTerms: "30 days",
-    category: "Electronics",
-  },
-  {
-    id: "SUP002",
-    name: "Mobile Components Ltd",
-    contactPerson: "Priya Sharma",
-    phone: "+91 87654 32109",
-    email: "priya@mobilecomponents.in",
-    address: "456 Tech Plaza, Mumbai",
-    outstandingAmount: 0,
-    totalPurchases: 180000,
-    lastOrderDate: "2024-01-12",
-    status: "active",
-    paymentTerms: "15 days",
-    category: "Parts",
-  },
-  {
-    id: "SUP003",
-    name: "Screen Masters",
-    contactPerson: "Amit Patel",
-    phone: "+91 76543 21098",
-    email: "amit@screenmasters.com",
-    address: "789 Display Street, Delhi",
-    outstandingAmount: 12500,
-    totalPurchases: 95000,
-    lastOrderDate: "2024-01-10",
-    status: "active",
-    paymentTerms: "45 days",
-    category: "Displays",
-  },
-  {
-    id: "SUP004",
-    name: "Battery Pro Solutions",
-    contactPerson: "Sneha Reddy",
-    phone: "+91 65432 10987",
-    email: "sneha@batterypro.in",
-    address: "321 Power Lane, Bangalore",
-    outstandingAmount: 8750,
-    totalPurchases: 67500,
-    lastOrderDate: "2024-01-08",
-    status: "inactive",
-    paymentTerms: "30 days",
-    category: "Batteries",
-  },
-];
-
-export default function Suppliers() {
-  const { t } = useLanguage();
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
-  const [suppliers, setSuppliers] = useState(mockSuppliers);
-
-  // Filter suppliers based on search and status
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    const matchesSearch =
-      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || supplier.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  // Calculate summary statistics
-  const totalSuppliers = suppliers.length;
-  const activeSuppliers = suppliers.filter((s) => s.status === "active").length;
-  const totalOutstanding = suppliers.reduce(
-    (sum, s) => sum + s.outstandingAmount,
-    0,
-  );
-  const totalPurchases = suppliers.reduce(
-    (sum, s) => sum + s.totalPurchases,
-    0,
-  );
-
-  const handleAddSupplier = (formData: any) => {
-    const newSupplier = {
-      id: `SUP${String(suppliers.length + 1).padStart(3, "0")}`,
-      ...formData,
-      outstandingAmount: 0,
-      totalPurchases: 0,
-      lastOrderDate: new Date().toISOString().split("T")[0],
-      status: "active",
-    };
-    setSuppliers([...suppliers, newSupplier]);
-    setIsAddDialogOpen(false);
-    toast({
-      title: "Supplier Added",
-      description: "New supplier has been added successfully.",
-    });
-  };
-
-  const handleRecordPayment = (supplierId: string, amount: number) => {
-    setSuppliers(
-      suppliers.map((supplier) =>
-        supplier.id === supplierId
-          ? {
-              ...supplier,
-              outstandingAmount: Math.max(
-                0,
-                supplier.outstandingAmount - amount,
-              ),
-            }
-          : supplier,
-      ),
-    );
-    setIsPaymentDialogOpen(false);
-    setSelectedSupplier(null);
-    toast({
-      title: "Payment Recorded",
-      description: `Payment of ₹${amount.toLocaleString()} has been recorded.`,
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "inactive":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
-  };
-
-  return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {t("suppliers")}
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Manage supplier relationships and outstanding payments
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              {t("export")}
-            </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Supplier
-                </Button>
-              </DialogTrigger>
-              <AddSupplierDialog onAdd={handleAddSupplier} />
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Suppliers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalSuppliers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {activeSuppliers} active
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Outstanding Amount
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{totalOutstanding.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Pending payments
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Purchases
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{totalPurchases.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">This year</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Average Terms
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">30 days</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Payment period
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Suppliers</CardTitle>
-            <CardDescription>
-              Manage your supplier database and track payments
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search suppliers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Suppliers Table */}
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Outstanding</TableHead>
-                    <TableHead>Total Purchases</TableHead>
-                    <TableHead>Last Order</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{supplier.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {supplier.id}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {supplier.contactPerson}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {supplier.phone}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          ₹{supplier.outstandingAmount.toLocaleString()}
-                        </div>
-                        {supplier.outstandingAmount > 0 && (
-                          <div className="text-xs text-red-600 flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            Payment due
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        ₹{supplier.totalPurchases.toLocaleString()}
-                      </TableCell>
-                      <TableCell>{supplier.lastOrderDate}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(supplier.status)}>
-                          {supplier.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link to={`/suppliers/${supplier.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          {supplier.outstandingAmount > 0 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedSupplier(supplier);
-                                setIsPaymentDialogOpen(true);
-                              }}
-                            >
-                              <DollarSign className="mr-1 h-4 w-4" />
-                              Pay
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Dialog */}
-        <Dialog
-          open={isPaymentDialogOpen}
-          onOpenChange={setIsPaymentDialogOpen}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Record Payment</DialogTitle>
-              <DialogDescription>
-                Record a payment for {selectedSupplier?.name}
-              </DialogDescription>
-            </DialogHeader>
-            <PaymentDialog
-              supplier={selectedSupplier}
-              onPayment={handleRecordPayment}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </AppLayout>
-  );
+interface Supplier {
+  id: string;
+  name: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  outstandingAmount: number;
+  totalPurchases: number;
+  lastOrderDate: string;
+  status: "active" | "inactive";
+  paymentTerms: string;
+  category: string;
 }
 
-// Add Supplier Dialog Component
-function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
-  const [formData, setFormData] = useState({
+const defaultSuppliers = ["patel", "mahalaxmi", "rathod", "sri ramdev", "hub"];
+
+export default function Suppliers() {
+  const { toast } = useToast();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
+    null,
+  );
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const [newSupplier, setNewSupplier] = useState({
     name: "",
     contactPerson: "",
     phone: "",
@@ -440,10 +91,56 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
     category: "Electronics",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAdd(formData);
-    setFormData({
+  const filteredSuppliers = suppliers.filter((supplier) => {
+    const matchesSearch =
+      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || supplier.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      active: {
+        label: "Active",
+        className:
+          "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+        icon: CheckCircle,
+      },
+      inactive: {
+        label: "Inactive",
+        className:
+          "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
+        icon: Clock,
+      },
+    };
+    return (
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.active
+    );
+  };
+
+  const handleAddSupplier = () => {
+    if (!newSupplier.name || !newSupplier.contactPerson || !newSupplier.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const supplier: Supplier = {
+      id: `SUP${(suppliers.length + 1).toString().padStart(3, "0")}`,
+      ...newSupplier,
+      outstandingAmount: 0,
+      totalPurchases: 0,
+      lastOrderDate: "",
+      status: "active" as const,
+    };
+
+    setSuppliers([...suppliers, supplier]);
+    setNewSupplier({
       name: "",
       contactPerson: "",
       phone: "",
@@ -452,191 +149,385 @@ function AddSupplierDialog({ onAdd }: { onAdd: (data: any) => void }) {
       paymentTerms: "30 days",
       category: "Electronics",
     });
+    setShowAddDialog(false);
+
+    toast({
+      title: "Supplier Added",
+      description: `${supplier.name} has been added successfully.`,
+    });
+  };
+
+  const handleDeleteSupplier = (supplierId: string) => {
+    setSuppliers(suppliers.filter((s) => s.id !== supplierId));
+    toast({
+      title: "Supplier Deleted",
+      description: "Supplier has been removed successfully.",
+    });
+  };
+
+  const quickAddSupplier = (name: string) => {
+    const supplier: Supplier = {
+      id: `SUP${(suppliers.length + 1).toString().padStart(3, "0")}`,
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      outstandingAmount: 0,
+      totalPurchases: 0,
+      lastOrderDate: "",
+      status: "active",
+      paymentTerms: "30 days",
+      category: "Electronics",
+    };
+
+    setSuppliers([...suppliers, supplier]);
+    toast({
+      title: "Supplier Added",
+      description: `${supplier.name} has been added to your suppliers.`,
+    });
   };
 
   return (
-    <DialogContent className="max-w-md">
-      <DialogHeader>
-        <DialogTitle>Add New Supplier</DialogTitle>
-        <DialogDescription>
-          Add a new supplier to your database
-        </DialogDescription>
-      </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
         <div>
-          <Label htmlFor="name">Supplier Name</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
+          <h1 className="text-3xl font-bold tracking-tight">Suppliers</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your supplier relationships and purchase history
+          </p>
         </div>
-        <div>
-          <Label htmlFor="contactPerson">Contact Person</Label>
-          <Input
-            id="contactPerson"
-            value={formData.contactPerson}
-            onChange={(e) =>
-              setFormData({ ...formData, contactPerson: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="phone">Phone</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="address">Address</Label>
-          <Input
-            id="address"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Select
-            value={formData.category}
-            onValueChange={(value) =>
-              setFormData({ ...formData, category: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Electronics">Electronics</SelectItem>
-              <SelectItem value="Parts">Parts</SelectItem>
-              <SelectItem value="Displays">Displays</SelectItem>
-              <SelectItem value="Batteries">Batteries</SelectItem>
-              <SelectItem value="Tools">Tools</SelectItem>
-              <SelectItem value="Accessories">Accessories</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="paymentTerms">Payment Terms</Label>
-          <Select
-            value={formData.paymentTerms}
-            onValueChange={(value) =>
-              setFormData({ ...formData, paymentTerms: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="15 days">15 days</SelectItem>
-              <SelectItem value="30 days">30 days</SelectItem>
-              <SelectItem value="45 days">45 days</SelectItem>
-              <SelectItem value="60 days">60 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Add Supplier</Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  );
-}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Supplier
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Add New Supplier</DialogTitle>
+              <DialogDescription>
+                Enter supplier information to add them to your database.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Supplier Name *</Label>
+                  <Input
+                    id="name"
+                    value={newSupplier.name}
+                    onChange={(e) =>
+                      setNewSupplier({ ...newSupplier, name: e.target.value })
+                    }
+                    placeholder="Enter supplier name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPerson">Contact Person *</Label>
+                  <Input
+                    id="contactPerson"
+                    value={newSupplier.contactPerson}
+                    onChange={(e) =>
+                      setNewSupplier({
+                        ...newSupplier,
+                        contactPerson: e.target.value,
+                      })
+                    }
+                    placeholder="Contact person name"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    value={newSupplier.phone}
+                    onChange={(e) =>
+                      setNewSupplier({ ...newSupplier, phone: e.target.value })
+                    }
+                    placeholder="+91 98765 43210"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newSupplier.email}
+                    onChange={(e) =>
+                      setNewSupplier({ ...newSupplier, email: e.target.value })
+                    }
+                    placeholder="supplier@email.com"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  value={newSupplier.address}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, address: e.target.value })
+                  }
+                  placeholder="Enter supplier address"
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={newSupplier.category}
+                    onValueChange={(value) =>
+                      setNewSupplier({ ...newSupplier, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Electronics">Electronics</SelectItem>
+                      <SelectItem value="Parts">Parts</SelectItem>
+                      <SelectItem value="Tools">Tools</SelectItem>
+                      <SelectItem value="Accessories">Accessories</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentTerms">Payment Terms</Label>
+                  <Select
+                    value={newSupplier.paymentTerms}
+                    onValueChange={(value) =>
+                      setNewSupplier({ ...newSupplier, paymentTerms: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Immediate">Immediate</SelectItem>
+                      <SelectItem value="15 days">15 days</SelectItem>
+                      <SelectItem value="30 days">30 days</SelectItem>
+                      <SelectItem value="45 days">45 days</SelectItem>
+                      <SelectItem value="60 days">60 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddSupplier}>Add Supplier</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-// Payment Dialog Component
-function PaymentDialog({
-  supplier,
-  onPayment,
-}: {
-  supplier: any;
-  onPayment: (supplierId: string, amount: number) => void;
-}) {
-  const [amount, setAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [notes, setNotes] = useState("");
+      {/* Quick Add Default Suppliers */}
+      {suppliers.length === 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Package className="mr-2 h-5 w-5" />
+              Quick Setup
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Get started quickly by adding common suppliers:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {defaultSuppliers.map((supplier) => (
+                <Button
+                  key={supplier}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => quickAddSupplier(supplier)}
+                  className="capitalize"
+                >
+                  <Plus className="mr-1 h-3 w-3" />
+                  {supplier}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const paymentAmount = parseFloat(amount);
-    if (paymentAmount > 0 && paymentAmount <= supplier?.outstandingAmount) {
-      onPayment(supplier.id, paymentAmount);
-    }
-  };
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Suppliers</CardTitle>
+            <div className="text-sm text-muted-foreground">
+              {suppliers.length} total suppliers
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex items-center justify-between space-x-4">
+            <div className="flex items-center space-x-2 flex-1">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search suppliers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>Outstanding Amount</Label>
-        <div className="text-lg font-semibold text-red-600">
-          ₹{supplier?.outstandingAmount?.toLocaleString()}
-        </div>
-      </div>
-      <div>
-        <Label htmlFor="amount">Payment Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          max={supplier?.outstandingAmount}
-          min="0"
-          step="0.01"
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="paymentMethod">Payment Method</Label>
-        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cash">Cash</SelectItem>
-            <SelectItem value="upi">UPI</SelectItem>
-            <SelectItem value="card">Card</SelectItem>
-            <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-            <SelectItem value="check">Check</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="notes">Notes (Optional)</Label>
-        <Input
-          id="notes"
-          placeholder="Payment notes..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
-      <DialogFooter>
-        <Button type="submit" disabled={!amount || parseFloat(amount) <= 0}>
-          Record Payment
-        </Button>
-      </DialogFooter>
-    </form>
+          {suppliers.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Payment Terms</TableHead>
+                    <TableHead>Total Purchases</TableHead>
+                    <TableHead>Outstanding</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSuppliers.map((supplier) => {
+                    const statusConfig = getStatusBadge(supplier.status);
+                    const StatusIcon = statusConfig.icon;
+
+                    return (
+                      <TableRow
+                        key={supplier.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{supplier.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              ID: {supplier.id}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm">
+                              <Building className="mr-2 h-3 w-3" />
+                              {supplier.contactPerson || "Not specified"}
+                            </div>
+                            {supplier.phone && (
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Phone className="mr-2 h-3 w-3" />
+                                {supplier.phone}
+                              </div>
+                            )}
+                            {supplier.email && (
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Mail className="mr-2 h-3 w-3" />
+                                {supplier.email}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{supplier.category}</Badge>
+                        </TableCell>
+                        <TableCell>{supplier.paymentTerms}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            ₹{supplier.totalPurchases.toLocaleString()}
+                          </div>
+                          {supplier.lastOrderDate && (
+                            <div className="text-sm text-muted-foreground">
+                              Last: {supplier.lastOrderDate}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className={`font-medium ${supplier.outstandingAmount > 0 ? "text-red-600" : "text-green-600"}`}
+                          >
+                            ₹{supplier.outstandingAmount.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={statusConfig.className}>
+                            <StatusIcon className="mr-1 h-3 w-3" />
+                            {statusConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link to={`/suppliers/${supplier.id}`}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() =>
+                                  handleDeleteSupplier(supplier.id)
+                                }
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <div className="text-center">
+                <Building className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No suppliers yet</p>
+                <p className="text-sm mb-4">
+                  Add your first supplier to get started
+                </p>
+                <Button onClick={() => setShowAddDialog(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Supplier
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
