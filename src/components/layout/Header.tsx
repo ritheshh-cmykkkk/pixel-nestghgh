@@ -90,19 +90,19 @@ export function Header({ onMenuClick }: HeaderProps) {
         </Button>
 
         {/* Search */}
-        <div className="flex flex-1 gap-x-3 sm:gap-x-4 self-stretch lg:gap-x-6">
+        <div className="flex flex-1 gap-x-3 sm:gap-x-4 lg:gap-x-6">
           <form
-            className="relative flex flex-1 max-w-lg"
+            className="relative flex flex-1 max-w-lg items-center"
             action="#"
             method="GET"
           >
             <label htmlFor="search-field" className="sr-only">
               {t("search")}
             </label>
-            <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground z-10" />
             <Input
               id="search-field"
-              className="border-0 bg-muted/50 hover:bg-muted/80 pl-10 pr-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 focus-visible:bg-muted text-sm placeholder:text-muted-foreground transition-colors"
+              className="h-10 border-0 bg-muted/50 hover:bg-muted/80 pl-10 pr-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 focus-visible:bg-muted text-sm placeholder:text-muted-foreground transition-colors w-full"
               placeholder={`${t("search")}...`}
               type="search"
               value={searchQuery}
@@ -122,10 +122,10 @@ export function Header({ onMenuClick }: HeaderProps) {
           {isDemoMode && (
             <Badge
               variant="outline"
-              className="hidden sm:flex items-center gap-1 border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950/50 font-medium"
+              className="hidden sm:flex items-center gap-1 border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950/50 font-medium"
             >
-              <Shield className="h-3 w-3" />
-              Demo Admin
+              <Info className="h-3 w-3" />
+              Demo
             </Badge>
           )}
 

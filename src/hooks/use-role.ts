@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Role = "admin" | "worker";
+type Role = "admin" | "owner" | "worker" | "demo";
 
 interface UseRoleReturn {
   role: Role;
   setRole: (role: Role) => void;
   isAdmin: boolean;
+  isOwner: boolean;
   isWorker: boolean;
+  isDemo: boolean;
   canDelete: (createdAt: string) => boolean;
   canAccess: (createdAt: string) => boolean;
   hasFullAccess: boolean;
+  hasEditAccess: boolean;
 }
 
 export function useRole(): UseRoleReturn {
@@ -18,12 +21,11 @@ export function useRole(): UseRoleReturn {
   const [role, setRoleState] = useState<Role>(() => {
     // Get role from authenticated user or fallback to localStorage for demo
     if (user?.role) {
-      return user.role;
+      return user.role as Role;
     }
-    const savedRole = localStorage.getItem("role");
-    return savedRole === "admin" || savedRole === "worker"
-      ? savedRole
-      : "admin";
+    const savedRole = localStorage.getItem("role") as Role;
+    const validRoles: Role[] = ["admin", "owner", "worker", "demo"];
+    return validRoles.includes(savedRole) ? savedRole : "demo";
   });
 
   const setRole = (newRole: Role) => {
@@ -31,25 +33,41 @@ export function useRole(): UseRoleReturn {
     localStorage.setItem("role", newRole);
   };
 
-  // Worker can only access/delete items within 24 hours
+  // Access control based on roles
   const canAccess = (createdAt: string): boolean => {
-    if (role === "admin") return true;
+    // Full access roles
+    if (role === "admin" || role === "owner") return true;
 
-    const created = new Date(createdAt);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+    // Demo has limited access to demo data only
+    if (role === "demo") return true;
 
-    return hoursDiff <= 24;
+    // Worker has 24-hour access limit
+    if (role === "worker") {
+      const created = new Date(createdAt);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+      return hoursDiff <= 24;
+    }
+
+    return false;
   };
 
   const canDelete = (createdAt: string): boolean => {
-    if (role === "admin") return true;
+    // Full delete access
+    if (role === "admin" || role === "owner") return true;
 
-    const created = new Date(createdAt);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+    // Demo cannot delete
+    if (role === "demo") return false;
 
-    return hoursDiff <= 24;
+    // Worker has 24-hour delete limit
+    if (role === "worker") {
+      const created = new Date(createdAt);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+      return hoursDiff <= 24;
+    }
+
+    return false;
   };
 
   useEffect(() => {
@@ -63,7 +81,8 @@ export function useRole(): UseRoleReturn {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "role" && e.newValue && !user?.role) {
         const newRole = e.newValue as Role;
-        if (newRole === "admin" || newRole === "worker") {
+        const validRoles: Role[] = ["admin", "owner", "worker", "demo"];
+        if (validRoles.includes(newRole)) {
           setRoleState(newRole);
         }
       }
@@ -77,9 +96,12 @@ export function useRole(): UseRoleReturn {
     role,
     setRole,
     isAdmin: role === "admin",
+    isOwner: role === "owner",
     isWorker: role === "worker",
+    isDemo: role === "demo",
     canDelete,
     canAccess,
-    hasFullAccess: role === "admin",
+    hasFullAccess: role === "admin" || role === "owner",
+    hasEditAccess: role === "admin", // Only admin can edit/develop
   };
 }

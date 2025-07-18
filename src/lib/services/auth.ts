@@ -9,14 +9,14 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
-  role?: "admin" | "worker";
+  role?: "admin" | "owner" | "worker" | "demo";
 }
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "worker";
+  role: "admin" | "owner" | "worker" | "demo";
   avatar?: string;
   phone?: string;
   shop_name?: string;
