@@ -42,6 +42,7 @@ export default function Login() {
     password: "",
     rememberMe: false,
   });
+  const [selectedRole, setSelectedRole] = useState<"admin" | "worker">("admin");
 
   // Get redirect location from router state
   const from = (location.state as any)?.from?.pathname || "/";
