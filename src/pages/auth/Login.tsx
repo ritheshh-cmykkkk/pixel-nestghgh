@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ import PWAManager from "@/lib/pwa";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading: authLoading, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
@@ -42,12 +43,15 @@ export default function Login() {
     rememberMe: false,
   });
 
+  // Get redirect location from router state
+  const from = (location.state as any)?.from?.pathname || "/";
+
   useEffect(() => {
     // Redirect if already authenticated
     if (isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, from]);
 
   useEffect(() => {
     // Monitor online/offline status
@@ -70,6 +74,11 @@ export default function Login() {
       return;
     }
 
+    if (isOffline) {
+      setError("You're offline. Please check your connection and try again.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -81,12 +90,15 @@ export default function Login() {
         localStorage.setItem("rememberMe", "true");
       }
 
-      navigate("/", { replace: true });
+      // Navigate to the intended page or dashboard
+      navigate(from, { replace: true });
     } catch (error: any) {
-      setError(
+      const errorMessage =
         error.response?.data?.message ||
-          "Login failed. Please check your credentials and try again.",
-      );
+        error.message ||
+        "Login failed. Please check your credentials and try again.";
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +123,7 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading...</p>
+          <p>Checking authentication...</p>
         </div>
       </div>
     );
@@ -214,7 +226,7 @@ export default function Login() {
                   <Alert>
                     <WifiOff className="h-4 w-4" />
                     <AlertDescription>
-                      You're offline. Some features may be limited.
+                      You're offline. Please check your internet connection.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -227,7 +239,7 @@ export default function Login() {
                     placeholder="admin@expenso.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || isOffline}
                     required
                   />
                 </div>
@@ -243,7 +255,7 @@ export default function Login() {
                       onChange={(e) =>
                         handleInputChange("password", e.target.value)
                       }
-                      disabled={isLoading}
+                      disabled={isLoading || isOffline}
                       required
                     />
                     <Button
@@ -252,7 +264,7 @@ export default function Login() {
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
+                      disabled={isLoading || isOffline}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -303,7 +315,7 @@ export default function Login() {
                   variant="outline"
                   className="w-full"
                   onClick={handleDemoLogin}
-                  disabled={isLoading}
+                  disabled={isLoading || isOffline}
                 >
                   Use Demo Credentials
                 </Button>

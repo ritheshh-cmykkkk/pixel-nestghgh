@@ -8,13 +8,16 @@ import { ConnectionProvider } from "@/contexts/ConnectionContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 
+// Layout and Auth components
+import AppLayout from "@/components/layout/AppLayout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
 // Pages
 import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
 import EditTransaction from "./pages/EditTransaction";
-
 import Suppliers from "./pages/Suppliers";
 import SupplierDetails from "./pages/SupplierDetails";
 import Expenditures from "./pages/Expenditures";
@@ -28,6 +31,11 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
+      retry: (failureCount, error: any) => {
+        // Don't retry on authentication errors
+        if (error?.response?.status === 401) return false;
+        return failureCount < 3;
+      },
     },
   },
 });
@@ -43,45 +51,69 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  {/* Authentication routes */}
-                  <Route path="/login" element={<Login />} />
-
-                  {/* Main app routes */}
-                  <Route path="/" element={<Dashboard />} />
+                  {/* Public authentication routes */}
                   <Route
-                    path="/dashboard"
-                    element={<Navigate to="/" replace />}
+                    path="/login"
+                    element={
+                      <ProtectedRoute requireAuth={false}>
+                        <Login />
+                      </ProtectedRoute>
+                    }
                   />
 
-                  {/* Transaction routes */}
-                  <Route path="/transactions" element={<Transactions />} />
+                  {/* Protected app routes with layout */}
                   <Route
-                    path="/transactions/new"
-                    element={<NewTransaction />}
-                  />
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    {/* Dashboard */}
+                    <Route index element={<Dashboard />} />
+                    <Route
+                      path="dashboard"
+                      element={<Navigate to="/" replace />}
+                    />
+
+                    {/* Transaction routes */}
+                    <Route path="transactions" element={<Transactions />} />
+                    <Route
+                      path="transactions/new"
+                      element={<NewTransaction />}
+                    />
+                    <Route
+                      path="transactions/:id/edit"
+                      element={<EditTransaction />}
+                    />
+
+                    {/* Supplier routes */}
+                    <Route path="suppliers" element={<Suppliers />} />
+                    <Route path="suppliers/:id" element={<SupplierDetails />} />
+
+                    {/* Financial routes */}
+                    <Route path="expenditures" element={<Expenditures />} />
+
+                    {/* Bill routes */}
+                    <Route path="bills" element={<Bills />} />
+
+                    {/* Report routes */}
+                    <Route path="reports" element={<Reports />} />
+
+                    {/* Settings routes */}
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
+
+                  {/* Catch-all route - redirect to login */}
                   <Route
-                    path="/transactions/:id/edit"
-                    element={<EditTransaction />}
+                    path="*"
+                    element={
+                      <ProtectedRoute>
+                        <NotFound />
+                      </ProtectedRoute>
+                    }
                   />
-
-                  {/* Supplier routes */}
-                  <Route path="/suppliers" element={<Suppliers />} />
-                  <Route path="/suppliers/:id" element={<SupplierDetails />} />
-
-                  {/* Financial routes */}
-                  <Route path="/expenditures" element={<Expenditures />} />
-
-                  {/* Bill routes */}
-                  <Route path="/bills" element={<Bills />} />
-
-                  {/* Report routes */}
-                  <Route path="/reports" element={<Reports />} />
-
-                  {/* Settings routes */}
-                  <Route path="/settings" element={<Settings />} />
-
-                  {/* Catch-all route */}
-                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
