@@ -1,20 +1,14 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,6 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -34,419 +34,556 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  TrendingDown,
-  Plus,
-  Receipt,
-  Calculator,
+  ResponsiveContainer,
   PieChart,
-  Download,
-  Search,
-  Filter,
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  Calendar,
-  CreditCard,
-  Banknote,
-  Smartphone,
-  Building,
-} from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import {
+  Pie,
+  Cell,
+  Tooltip,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Cell,
 } from "recharts";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  CalendarDays,
+  Receipt,
+  Building,
+  CreditCard,
+  Banknote,
+  QrCode,
+  FileText,
+} from "lucide-react";
+import { useRole } from "@/hooks/use-role";
 
-// Mock expenditure data
-const mockExpenditures = [
-  {
-    id: "EXP001",
-    date: "2024-01-15",
-    description: "Mobile phone parts purchase",
-    category: "Inventory",
-    amount: 15000,
-    paymentMethod: "bank_transfer",
-    supplier: "TechParts Solutions",
-    notes: "Screen and battery parts for Samsung phones",
-    receiptUrl: null,
-  },
-  {
-    id: "EXP002",
-    date: "2024-01-14",
-    description: "Monthly rent payment",
-    category: "Rent",
-    amount: 25000,
-    paymentMethod: "bank_transfer",
-    supplier: "Property Owner",
-    notes: "Shop rent for January 2024",
-    receiptUrl: null,
-  },
-  {
-    id: "EXP003",
-    date: "2024-01-13",
-    description: "Electricity bill",
-    category: "Utilities",
-    amount: 3500,
-    paymentMethod: "upi",
-    supplier: "Electricity Board",
-    notes: "December 2023 electricity bill",
-    receiptUrl: null,
-  },
-  {
-    id: "EXP004",
-    date: "2024-01-12",
-    description: "Staff salary - January",
-    category: "Salaries",
-    amount: 18000,
-    paymentMethod: "cash",
-    supplier: "Employee",
-    notes: "Monthly salary for technician",
-    receiptUrl: null,
-  },
-  {
-    id: "EXP005",
-    date: "2024-01-11",
-    description: "Tool purchase - screwdriver set",
-    category: "Equipment",
-    amount: 2500,
-    paymentMethod: "card",
-    supplier: "Tools Mart",
-    notes: "Professional repair toolkit",
-    receiptUrl: null,
-  },
-];
+interface Expenditure {
+  id: string;
+  date: string;
+  description: string;
+  category: string;
+  amount: number;
+  paymentMethod: "cash" | "upi" | "card" | "bank_transfer";
+  supplier: string;
+  notes: string;
+  receiptUrl: string | null;
+}
 
-// Chart data
-const categoryData = [
-  { name: "Inventory", amount: 15000, color: "#3B82F6" },
-  { name: "Rent", amount: 25000, color: "#EF4444" },
-  { name: "Utilities", amount: 3500, color: "#F59E0B" },
-  { name: "Salaries", amount: 18000, color: "#10B981" },
-  { name: "Equipment", amount: 2500, color: "#8B5CF6" },
-];
+interface CategoryData {
+  name: string;
+  amount: number;
+  color: string;
+}
 
-const monthlyData = [
-  { month: "Nov", expenses: 58000, revenue: 85000, profit: 27000 },
-  { month: "Dec", expenses: 62000, revenue: 92000, profit: 30000 },
-  { month: "Jan", expenses: 64000, revenue: 95000, profit: 31000 },
-];
+interface MonthlyData {
+  month: string;
+  expenses: number;
+  revenue: number;
+  profit: number;
+}
 
 export default function Expenditures() {
-  const { t } = useLanguage();
-  const { toast } = useToast();
-  const [showProfits, setShowProfits] = useState(
-    localStorage.getItem("showProfits") === "true",
-  );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState("all");
+  const { role } = useRole();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [expenditures, setExpenditures] = useState(mockExpenditures);
+  const [expenditures, setExpenditures] = useState<Expenditure[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
 
-  const toggleProfits = () => {
-    const newValue = !showProfits;
-    setShowProfits(newValue);
-    localStorage.setItem("showProfits", newValue.toString());
-  };
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
 
-  // Filter expenditures
+  const [newExpenditure, setNewExpenditure] = useState({
+    description: "",
+    category: "Inventory",
+    amount: 0,
+    paymentMethod: "bank_transfer" as const,
+    supplier: "",
+    notes: "",
+  });
+
+  const categories = [
+    "Inventory",
+    "Rent",
+    "Utilities",
+    "Equipment",
+    "Marketing",
+    "Staff",
+    "Other",
+  ];
+
   const filteredExpenditures = expenditures.filter((exp) => {
     const matchesSearch =
       exp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      exp.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      exp.notes.toLowerCase().includes(searchTerm.toLowerCase());
-
+      exp.supplier.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       categoryFilter === "all" || exp.category === categoryFilter;
-    const matchesPayment =
-      paymentMethodFilter === "all" ||
-      exp.paymentMethod === paymentMethodFilter;
-
-    return matchesSearch && matchesCategory && matchesPayment;
+    return matchesSearch && matchesCategory;
   });
 
-  // Calculate totals
-  const totalExpenses = expenditures.reduce((sum, exp) => sum + exp.amount, 0);
-  const monthlyExpenses = expenditures
-    .filter((exp) => exp.date.startsWith("2024-01"))
-    .reduce((sum, exp) => sum + exp.amount, 0);
-
-  const categories = [...new Set(expenditures.map((exp) => exp.category))];
-  const paymentMethods = [
-    ...new Set(expenditures.map((exp) => exp.paymentMethod)),
-  ];
-
-  const handleAddExpenditure = (formData: any) => {
-    const newExpenditure = {
-      id: `EXP${String(expenditures.length + 1).padStart(3, "0")}`,
-      date: new Date().toISOString().split("T")[0],
-      ...formData,
-      receiptUrl: null,
-    };
-    setExpenditures([...expenditures, newExpenditure]);
-    setIsAddDialogOpen(false);
-    toast({
-      title: "Expenditure Added",
-      description: "New expenditure has been recorded successfully.",
-    });
-  };
-
   const getPaymentMethodIcon = (method: string) => {
-    switch (method) {
-      case "cash":
-        return <Banknote className="h-4 w-4" />;
-      case "card":
-        return <CreditCard className="h-4 w-4" />;
-      case "upi":
-        return <Smartphone className="h-4 w-4" />;
-      case "bank_transfer":
-        return <Building className="h-4 w-4" />;
-      default:
-        return <Receipt className="h-4 w-4" />;
-    }
-  };
-
-  const getPaymentMethodLabel = (method: string) => {
-    switch (method) {
-      case "cash":
-        return "Cash";
-      case "card":
-        return "Card";
-      case "upi":
-        return "UPI";
-      case "bank_transfer":
-        return "Bank Transfer";
-      case "check":
-        return "Check";
-      default:
-        return method;
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      Inventory:
-        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-      Rent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-      Utilities:
-        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-      Salaries:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      Equipment:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-      Marketing:
-        "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300",
-      Maintenance:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+    const icons = {
+      cash: <Banknote className="h-3 w-3" />,
+      upi: <QrCode className="h-3 w-3" />,
+      card: <CreditCard className="h-3 w-3" />,
+      bank_transfer: <Building className="h-3 w-3" />,
     };
     return (
-      colors[category] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+      icons[method as keyof typeof icons] || <Banknote className="h-3 w-3" />
     );
   };
 
+  const getCategoryColor = (category: string) => {
+    const colors: { [key: string]: string } = {
+      Inventory: "#3B82F6",
+      Rent: "#DC2626",
+      Utilities: "#16A34A",
+      Equipment: "#CA8A04",
+      Marketing: "#9333EA",
+      Staff: "#0891B2",
+      Other: "#6B7280",
+    };
+    return colors[category] || "#6B7280";
+  };
+
+  const handleAddExpenditure = () => {
+    if (!newExpenditure.description || !newExpenditure.supplier) {
+      return;
+    }
+
+    const expenditure: Expenditure = {
+      id: `EXP${(expenditures.length + 1).toString().padStart(3, "0")}`,
+      date: new Date().toISOString().split("T")[0],
+      ...newExpenditure,
+      receiptUrl: null,
+    };
+
+    setExpenditures([expenditure, ...expenditures]);
+    setNewExpenditure({
+      description: "",
+      category: "Inventory",
+      amount: 0,
+      paymentMethod: "bank_transfer",
+      supplier: "",
+      notes: "",
+    });
+    setIsAddDialogOpen(false);
+
+    // Update category data
+    updateCategoryData([expenditure, ...expenditures]);
+  };
+
+  const handleDeleteExpenditure = (id: string) => {
+    const updated = expenditures.filter((exp) => exp.id !== id);
+    setExpenditures(updated);
+    updateCategoryData(updated);
+  };
+
+  const updateCategoryData = (data: Expenditure[]) => {
+    const categoryTotals = data.reduce(
+      (acc, exp) => {
+        acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+        return acc;
+      },
+      {} as { [key: string]: number },
+    );
+
+    const categoryChartData = Object.entries(categoryTotals).map(
+      ([category, amount]) => ({
+        name: category,
+        amount,
+        color: getCategoryColor(category),
+      }),
+    );
+
+    setCategoryData(categoryChartData);
+  };
+
+  const totalExpenses = expenditures.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthlyExpenses = expenditures.filter((exp) => {
+    const expDate = new Date(exp.date);
+    const now = new Date();
+    return (
+      expDate.getMonth() === now.getMonth() &&
+      expDate.getFullYear() === now.getFullYear()
+    );
+  }).length;
+
+  const recentExpenses = expenditures.slice(0, 5);
+
+  // Only show expenditures for admin role
+  if (role === "worker") {
+    return (
+      <div className="space-y-8 p-8">
+        <div className="text-center py-12">
+          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
+          <p className="text-muted-foreground">
+            Expenditure data is only available to administrators.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {t("expenditures")}
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Track business expenses and analyze profit margins
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
-              ) : (
-                <Eye className="mr-2 h-4 w-4" />
-              )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              {t("export")}
-            </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Expenditure
-                </Button>
-              </DialogTrigger>
-              <AddExpenditureDialog onAdd={handleAddExpenditure} />
-            </Dialog>
-          </div>
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Expenditures</h1>
+          <p className="text-muted-foreground mt-2">
+            Track and manage all business expenses and outgoing payments
+          </p>
         </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Expenses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{totalExpenses.toLocaleString()}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Expenditure
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Add New Expenditure</DialogTitle>
+              <DialogDescription>
+                Record a new business expense or payment.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Input
+                  id="description"
+                  value={newExpenditure.description}
+                  onChange={(e) =>
+                    setNewExpenditure({
+                      ...newExpenditure,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Enter expenditure description"
+                />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">All time</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{monthlyExpenses.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">January 2024</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Categories
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{categories.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Expense types
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {showProfits ? "Monthly Profit" : "Average Expense"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {showProfits
-                  ? "₹31,000"
-                  : `₹${Math.round(totalExpenses / expenditures.length).toLocaleString()}`}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {showProfits ? "January 2024" : "Per transaction"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Expense by Category</CardTitle>
-              <CardDescription>
-                Breakdown of expenses by category
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="amount"
-                    label={({ name, value }) =>
-                      `${name}: ₹${value.toLocaleString()}`
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={newExpenditure.category}
+                    onValueChange={(value) =>
+                      setNewExpenditure({ ...newExpenditure, category: value })
                     }
                   >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => `₹${value.toLocaleString()}`}
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount (₹) *</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={newExpenditure.amount}
+                    onChange={(e) =>
+                      setNewExpenditure({
+                        ...newExpenditure,
+                        amount: Number(e.target.value),
+                      })
+                    }
+                    placeholder="0"
                   />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Overview</CardTitle>
-              <CardDescription>
-                Revenue, expenses and profit trends
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value) => `₹${value.toLocaleString()}`}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paymentMethod">Payment Method</Label>
+                  <Select
+                    value={newExpenditure.paymentMethod}
+                    onValueChange={(value) =>
+                      setNewExpenditure({
+                        ...newExpenditure,
+                        paymentMethod: value as any,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="upi">UPI</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">
+                        Bank Transfer
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supplier">Supplier/Vendor *</Label>
+                  <Input
+                    id="supplier"
+                    value={newExpenditure.supplier}
+                    onChange={(e) =>
+                      setNewExpenditure({
+                        ...newExpenditure,
+                        supplier: e.target.value,
+                      })
+                    }
+                    placeholder="Enter supplier name"
                   />
-                  <Legend />
-                  <Bar dataKey="expenses" fill="#EF4444" name="Expenses" />
-                  <Bar dataKey="revenue" fill="#3B82F6" name="Revenue" />
-                  {showProfits && (
-                    <Bar dataKey="profit" fill="#10B981" name="Profit" />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={newExpenditure.notes}
+                  onChange={(e) =>
+                    setNewExpenditure({
+                      ...newExpenditure,
+                      notes: e.target.value,
+                    })
+                  }
+                  placeholder="Additional notes or details"
+                  rows={2}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleAddExpenditure}>Add Expenditure</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-        {/* Expenditures Table */}
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle>Expenditure Log</CardTitle>
-            <CardDescription>
-              Complete record of all business expenses
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Expenditures
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <div className="text-2xl font-bold">
+              ₹{totalExpenses.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {expenditures.length} total transactions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              This Month's Expenses
+            </CardTitle>
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{monthlyExpenses}</div>
+            <p className="text-xs text-muted-foreground">Expenses this month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Average Expense
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹
+              {expenditures.length > 0
+                ? Math.round(
+                    totalExpenses / expenditures.length,
+                  ).toLocaleString()
+                : 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Per transaction</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Category Breakdown Chart */}
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Expense Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categoryData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="amount"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => [
+                        `₹${value.toLocaleString()}`,
+                        "Amount",
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-4 space-y-2">
+                  {categoryData.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center">
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">
+                        ₹{item.amount.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                <div className="text-center">
+                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No expense data available</p>
+                  <p className="text-sm">
+                    Add some expenditures to see the breakdown
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Expenditures */}
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Recent Expenditures</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentExpenses.length > 0 ? (
+              <div className="space-y-4">
+                {recentExpenses.map((expenditure) => (
+                  <div
+                    key={expenditure.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: getCategoryColor(
+                            expenditure.category,
+                          ),
+                        }}
+                      />
+                      <div>
+                        <p className="font-medium">{expenditure.description}</p>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Building className="h-3 w-3 mr-1" />
+                          {expenditure.supplier}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ₹{expenditure.amount.toLocaleString()}
+                      </p>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        {getPaymentMethodIcon(expenditure.paymentMethod)}
+                        <span className="ml-1 capitalize">
+                          {expenditure.paymentMethod.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{expenditure.category}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No recent expenditures</p>
+                  <p className="text-sm">
+                    Start by adding your first expenditure
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* All Expenditures Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Expenditures</CardTitle>
+            <div className="text-sm text-muted-foreground">
+              {filteredExpenditures.length} of {expenditures.length}{" "}
+              expenditures
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex items-center justify-between space-x-4">
+            <div className="flex items-center space-x-2 flex-1">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search expenditures..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-9"
                 />
               </div>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Filter by category" />
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
@@ -457,24 +594,10 @@ export default function Expenditures() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={paymentMethodFilter}
-                onValueChange={setPaymentMethodFilter}
-              >
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Payment method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Methods</SelectItem>
-                  {paymentMethods.map((method) => (
-                    <SelectItem key={method} value={method}>
-                      {getPaymentMethodLabel(method)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
+          </div>
 
+          {expenditures.length > 0 ? (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -482,19 +605,22 @@ export default function Expenditures() {
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Payment Method</TableHead>
                     <TableHead>Amount</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Supplier</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredExpenditures.map((expenditure) => (
-                    <TableRow key={expenditure.id}>
+                    <TableRow
+                      key={expenditure.id}
+                      className="hover:bg-muted/50 transition-colors"
+                    >
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {expenditure.date}
+                        <div className="flex items-center">
+                          <CalendarDays className="mr-2 h-3 w-3" />
+                          {new Date(expenditure.date).toLocaleDateString()}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -511,181 +637,80 @@ export default function Expenditures() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={getCategoryColor(expenditure.category)}
+                          variant="secondary"
+                          style={{
+                            backgroundColor: `${getCategoryColor(expenditure.category)}15`,
+                            color: getCategoryColor(expenditure.category),
+                          }}
                         >
                           {expenditure.category}
                         </Badge>
-                      </TableCell>
-                      <TableCell>{expenditure.supplier}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getPaymentMethodIcon(expenditure.paymentMethod)}
-                          {getPaymentMethodLabel(expenditure.paymentMethod)}
-                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
                           ₹{expenditure.amount.toLocaleString()}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {getPaymentMethodIcon(expenditure.paymentMethod)}
+                          <span className="ml-2 capitalize">
+                            {expenditure.paymentMethod.replace("_", " ")}
+                          </span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Building className="mr-2 h-3 w-3" />
+                          {expenditure.supplier}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() =>
+                                handleDeleteExpenditure(expenditure.id)
+                              }
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
-  );
-}
-
-// Add Expenditure Dialog Component
-function AddExpenditureDialog({ onAdd }: { onAdd: (data: any) => void }) {
-  const [formData, setFormData] = useState({
-    description: "",
-    category: "Inventory",
-    amount: "",
-    paymentMethod: "cash",
-    supplier: "",
-    notes: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAdd({
-      ...formData,
-      amount: parseFloat(formData.amount),
-    });
-    setFormData({
-      description: "",
-      category: "Inventory",
-      amount: "",
-      paymentMethod: "cash",
-      supplier: "",
-      notes: "",
-    });
-  };
-
-  return (
-    <DialogContent className="max-w-md">
-      <DialogHeader>
-        <DialogTitle>Add New Expenditure</DialogTitle>
-        <DialogDescription>Record a new business expense</DialogDescription>
-      </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="What was purchased or paid for?"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Select
-            value={formData.category}
-            onValueChange={(value) =>
-              setFormData({ ...formData, category: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Inventory">Inventory</SelectItem>
-              <SelectItem value="Rent">Rent</SelectItem>
-              <SelectItem value="Utilities">Utilities</SelectItem>
-              <SelectItem value="Salaries">Salaries</SelectItem>
-              <SelectItem value="Equipment">Equipment</SelectItem>
-              <SelectItem value="Marketing">Marketing</SelectItem>
-              <SelectItem value="Maintenance">Maintenance</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="amount">Amount</Label>
-          <Input
-            id="amount"
-            type="number"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="paymentMethod">Payment Method</Label>
-          <Select
-            value={formData.paymentMethod}
-            onValueChange={(value) =>
-              setFormData({ ...formData, paymentMethod: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="card">Card</SelectItem>
-              <SelectItem value="upi">UPI</SelectItem>
-              <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-              <SelectItem value="check">Check</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="supplier">Supplier/Vendor</Label>
-          <Input
-            id="supplier"
-            value={formData.supplier}
-            onChange={(e) =>
-              setFormData({ ...formData, supplier: e.target.value })
-            }
-            placeholder="Who was paid?"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="notes">Notes (Optional)</Label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) =>
-              setFormData({ ...formData, notes: e.target.value })
-            }
-            placeholder="Additional details..."
-            rows={3}
-          />
-        </div>
-        <DialogFooter>
-          <Button
-            type="submit"
-            disabled={!formData.description || !formData.amount}
-          >
-            Add Expenditure
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
+          ) : (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <div className="text-center">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No expenditures yet</p>
+                <p className="text-sm mb-4">
+                  Start by recording your first business expense
+                </p>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Expenditure
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
