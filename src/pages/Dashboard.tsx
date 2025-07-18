@@ -411,12 +411,14 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Today's Revenue
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="p-2 bg-green-100 dark:bg-green-950 rounded-full">
+              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -425,10 +427,10 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">
               {dashboardStats?.revenue.growth_percentage !== undefined ? (
                 <span
-                  className={`flex items-center ${
+                  className={`flex items-center font-medium ${
                     dashboardStats.revenue.growth_percentage > 0
-                      ? "text-green-600"
-                      : "text-red-600"
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
                   }`}
                 >
                   {dashboardStats.revenue.growth_percentage > 0 ? (
