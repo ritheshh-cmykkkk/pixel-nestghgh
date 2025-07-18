@@ -43,11 +43,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const token = AuthService.getStoredToken();
       const storedUser = AuthService.getStoredUser();
+      const isDemoMode = localStorage.getItem("demo_mode") === "true";
 
       if (token && storedUser) {
-        // Verify token is still valid by fetching current user
-        const currentUser = await AuthService.getCurrentUser();
-        setUser(currentUser);
+        if (isDemoMode) {
+          // Demo mode - use stored user data without backend verification
+          setUser(storedUser);
+        } else {
+          // Regular mode - verify token with backend
+          const currentUser = await AuthService.getCurrentUser();
+          setUser(currentUser);
+        }
       }
     } catch (error) {
       // Token is invalid, clear stored data
@@ -116,7 +122,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await AuthService.logout();
+      const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+      if (isDemoMode) {
+        // Demo mode - just clear local data
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_data");
+        localStorage.removeItem("demo_mode");
+        localStorage.removeItem("role"); // Clear old role system
+      } else {
+        // Regular mode - call backend logout
+        await AuthService.logout();
+      }
+
       setUser(null);
 
       toast({
@@ -126,6 +144,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error("Logout error:", error);
       // Still clear local state even if API call fails
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_data");
+      localStorage.removeItem("demo_mode");
+      localStorage.removeItem("role");
       setUser(null);
     }
   };

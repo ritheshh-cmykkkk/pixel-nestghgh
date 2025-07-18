@@ -74,16 +74,29 @@ export default function Login() {
       return;
     }
 
-    if (isOffline) {
-      setError("You're offline. Please check your connection and try again.");
-      return;
-    }
-
     setIsLoading(true);
     setError("");
 
     try {
-      await login(formData.email, formData.password);
+      // Check if using demo credentials
+      const isDemoCredentials =
+        formData.email === "admin@expenso.com" &&
+        formData.password === "admin123";
+
+      if (isDemoCredentials) {
+        // Handle demo login locally without backend
+        await handleDemoAuthentication();
+      } else {
+        // Regular backend authentication
+        if (isOffline) {
+          setError(
+            "You're offline. Please check your connection and try again.",
+          );
+          return;
+        }
+
+        await login(formData.email, formData.password);
+      }
 
       // Store remember me preference
       if (formData.rememberMe) {
@@ -104,6 +117,35 @@ export default function Login() {
     }
   };
 
+  const handleDemoAuthentication = async () => {
+    // Create demo user data
+    const demoUser = {
+      id: "demo-user-1",
+      email: "admin@expenso.com",
+      name: "Demo Admin",
+      role: "admin" as const,
+      shop_name: "Demo Repair Shop",
+      avatar: null,
+    };
+
+    const demoAuthData = {
+      token: "demo-token-" + Date.now(),
+      user: demoUser,
+      expires_in: 86400, // 24 hours
+    };
+
+    // Store demo auth data locally
+    localStorage.setItem("auth_token", demoAuthData.token);
+    localStorage.setItem("user_data", JSON.stringify(demoUser));
+    localStorage.setItem("demo_mode", "true");
+
+    // Small delay to simulate authentication
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Show success message
+    console.log("Demo login successful!");
+  };
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
@@ -111,11 +153,20 @@ export default function Login() {
   };
 
   const handleDemoLogin = async () => {
-    setFormData({
-      email: "admin@expenso.com",
-      password: "admin123",
-      rememberMe: false,
-    });
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Direct demo authentication without form submission
+      await handleDemoAuthentication();
+
+      // Navigate to dashboard
+      navigate(from, { replace: true });
+    } catch (error) {
+      setError("Demo login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (authLoading) {

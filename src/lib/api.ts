@@ -28,9 +28,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+    if (error.response?.status === 401 && !isDemoMode) {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_data");
+      localStorage.removeItem("demo_mode");
       window.location.href = "/login";
     }
     return Promise.reject(error);
