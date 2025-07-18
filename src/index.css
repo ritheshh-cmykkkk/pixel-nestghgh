@@ -83,6 +83,23 @@
     --chart-4: 280 65% 65%;
     --chart-5: 340 75% 60%;
 
+    /* High contrast status colors - dark theme */
+    --success: 142 69% 58%;
+    --success-foreground: 0 0% 2%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 0 0% 2%;
+
+    /* High contrast repair status colors - dark theme */
+    --repair-pending: 38 92% 58%;
+    --repair-progress: 217 91% 65%;
+    --repair-completed: 142 69% 58%;
+    --repair-delivered: 147 64% 65%;
+
+    /* High contrast stock level colors - dark theme */
+    --stock-critical: 0 84% 65%;
+    --stock-low: 38 92% 58%;
+    --stock-good: 142 69% 58%;
+
     /* High contrast dark sidebar colors */
     --sidebar-background: 220 13% 1%;
     --sidebar-foreground: 0 0% 98%;
