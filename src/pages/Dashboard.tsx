@@ -509,25 +509,55 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="pl-2">
             {weeklyRevenue.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={weeklyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value: number, name: string) => [
-                      name === "revenue" ? `₹${value.toLocaleString()}` : value,
-                      name === "revenue"
-                        ? "Revenue"
-                        : name === "repairs"
-                          ? "Repairs"
-                          : "Profit",
-                    ]}
-                  />
-                  <Bar dataKey="revenue" fill="#3b82f6" />
-                  <Bar dataKey="profit" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="chart-high-contrast">
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={weeklyRevenue}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      strokeWidth="1"
+                    />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: "hsl(var(--foreground))", fontWeight: 500 }}
+                    />
+                    <YAxis
+                      tick={{ fill: "hsl(var(--foreground))", fontWeight: 500 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "2px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        color: "hsl(var(--foreground))",
+                        fontWeight: 500,
+                      }}
+                      formatter={(value: number, name: string) => [
+                        name === "revenue"
+                          ? `₹${value.toLocaleString()}`
+                          : value,
+                        name === "revenue"
+                          ? "Revenue"
+                          : name === "repairs"
+                            ? "Repairs"
+                            : "Profit",
+                      ]}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="#60a5fa"
+                      stroke="#3b82f6"
+                      strokeWidth="1"
+                    />
+                    <Bar
+                      dataKey="profit"
+                      fill="#34d399"
+                      stroke="#16a34a"
+                      strokeWidth="1"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-[350px] text-muted-foreground">
                 <div className="text-center">
