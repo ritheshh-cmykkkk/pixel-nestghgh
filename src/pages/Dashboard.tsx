@@ -22,7 +22,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   DollarSign,
-<<<<<<< HEAD
   Users,
   Wrench,
   Package,
@@ -38,25 +37,15 @@ import {
   WifiOff,
   RefreshCw,
   Info,
-=======
-  Eye,
-  EyeOff,
-  ShoppingCart,
-  Zap,
-  FileText,
-  Receipt,
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/use-role";
 import { StatisticsService, DashboardStats } from "@/lib/services/statistics";
 import { TransactionService, Transaction } from "@/lib/services/transactions";
 import { toast } from "@/hooks/use-toast";
 import { DemoRoleSwitcher } from "@/components/demo/DemoRoleSwitcher";
-=======
 import { useRole } from "@/hooks/use-role";
 >>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
