@@ -98,6 +98,53 @@ export default function Expenditures() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+  // Load demo data for demo users
+  useEffect(() => {
+    const loadData = async () => {
+      if (isDemoMode) {
+        try {
+          const demoExpenditures = await DemoDataService.getDemoExpenditures();
+          setExpenditures(
+            demoExpenditures.map((exp: any) => ({
+              id: exp.id,
+              date: new Date(exp.date).toLocaleDateString(),
+              description: exp.description,
+              category: exp.category,
+              amount: exp.amount,
+              paymentMethod: "bank_transfer" as const,
+              supplier: "Demo Supplier",
+              notes: "Demo expenditure record",
+              receiptUrl: null,
+            })),
+          );
+
+          // Set demo category data
+          setCategoryData([
+            { name: "Inventory", amount: 45000, color: "#3b82f6" },
+            { name: "Rent", amount: 25000, color: "#ef4444" },
+            { name: "Salary", amount: 80000, color: "#10b981" },
+            { name: "Utilities", amount: 12000, color: "#f59e0b" },
+            { name: "Marketing", amount: 8000, color: "#8b5cf6" },
+          ]);
+
+          // Set demo monthly data
+          setMonthlyData([
+            { month: "Jan", expenses: 150000, revenue: 384500, profit: 234500 },
+            { month: "Dec", expenses: 140000, revenue: 342800, profit: 202800 },
+            { month: "Nov", expenses: 135000, revenue: 325000, profit: 190000 },
+          ]);
+        } catch (error) {
+          console.error("Failed to load demo expenditures:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [isDemoMode]);
 
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
