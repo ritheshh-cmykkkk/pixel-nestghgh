@@ -13,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
 import EditTransaction from "./pages/EditTransaction";
-import Inventory from "./pages/Inventory";
+
 import Suppliers from "./pages/Suppliers";
 import SupplierDetails from "./pages/SupplierDetails";
 import Expenditures from "./pages/Expenditures";
@@ -58,9 +58,6 @@ const App = () => (
                   path="/transactions/:id/edit"
                   element={<EditTransaction />}
                 />
-
-                {/* Inventory routes */}
-                <Route path="/inventory" element={<Inventory />} />
 
                 {/* Supplier routes */}
                 <Route path="/suppliers" element={<Suppliers />} />

@@ -27,11 +27,7 @@ const navigation = [
     href: "/transactions",
     icon: CreditCard,
   },
-  {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
-  },
+
   {
     name: "suppliers",
     href: "/suppliers",
