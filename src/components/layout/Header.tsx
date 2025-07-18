@@ -30,11 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ConnectionIndicator } from "@/contexts/ConnectionContext";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
-=======
-import { RoleSwitcher } from "@/components/RoleSwitcher";
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
 interface HeaderProps {
   onMenuClick: () => void;
