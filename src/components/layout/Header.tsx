@@ -122,10 +122,10 @@ export function Header({ onMenuClick }: HeaderProps) {
           {isDemoMode && (
             <Badge
               variant="outline"
-              className="hidden sm:flex items-center gap-1 border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/50"
+              className="hidden sm:flex items-center gap-1 border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950/50 font-medium"
             >
-              <Info className="h-3 w-3" />
-              Demo Mode
+              <Shield className="h-3 w-3" />
+              Demo Admin
             </Badge>
           )}
 
@@ -239,9 +239,13 @@ export function Header({ onMenuClick }: HeaderProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user?.name || "User"}</p>
+                  <p className="font-medium">
+                    {isDemoMode ? "Demo Admin" : user?.name || "User"}
+                  </p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user?.email || "user@example.com"}
+                    {isDemoMode
+                      ? "admin@demo.com"
+                      : user?.email || "user@example.com"}
                   </p>
                   {user?.shop_name && (
                     <p className="w-[200px] truncate text-xs text-muted-foreground">
