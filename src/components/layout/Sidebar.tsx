@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useRole } from "@/hooks/use-role";
 import {
   LayoutDashboard,
   CreditCard,
@@ -21,37 +22,43 @@ const navigation = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
+    roles: ["admin", "worker"],
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
+    roles: ["admin", "worker"],
   },
-
   {
     name: "suppliers",
     href: "/suppliers",
     icon: Users,
+    roles: ["admin", "worker"],
   },
   {
     name: "expenditures",
     href: "/expenditures",
     icon: TrendingUp,
+    roles: ["admin"],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
+    roles: ["admin"],
   },
   {
     name: "reports",
     href: "/reports",
     icon: FileText,
+    roles: ["admin"],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
+    roles: ["admin", "worker"],
   },
 ];
 
@@ -63,6 +70,12 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const { t } = useLanguage();
+  const { role } = useRole();
+
+  // Filter navigation items based on user role
+  const filteredNavigation = navigation.filter((item) =>
+    item.roles.includes(role),
+  );
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (item.exact) {
