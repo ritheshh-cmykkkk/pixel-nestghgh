@@ -90,6 +90,8 @@ export default function Reports() {
   const { role } = useRole();
   const [dateFilter, setDateFilter] = useState("last-6-months");
   const [reportType, setReportType] = useState("revenue");
+  const [isLoading, setIsLoading] = useState(true);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
 
   // Initialize empty data states
   const [monthlyRevenueData, setMonthlyRevenueData] = useState<
@@ -104,6 +106,153 @@ export default function Reports() {
   const [supplierSpendingData, setSupplierSpendingData] = useState<
     SupplierSpending[]
   >([]);
+
+  // Load demo data for demo users
+  useEffect(() => {
+    const loadData = async () => {
+      if (isDemoMode) {
+        try {
+          const demoReports = await DemoDataService.getDemoReports();
+
+          // Set monthly revenue data
+          setMonthlyRevenueData([
+            {
+              month: "Aug",
+              revenue: 320000,
+              expenses: 180000,
+              profit: 140000,
+              repairs: 76,
+            },
+            {
+              month: "Sep",
+              revenue: 350000,
+              expenses: 195000,
+              profit: 155000,
+              repairs: 82,
+            },
+            {
+              month: "Oct",
+              revenue: 380000,
+              expenses: 210000,
+              profit: 170000,
+              repairs: 89,
+            },
+            {
+              month: "Nov",
+              revenue: 342800,
+              expenses: 195000,
+              profit: 147800,
+              repairs: 78,
+            },
+            {
+              month: "Dec",
+              revenue: 384500,
+              expenses: 215000,
+              profit: 169500,
+              repairs: 94,
+            },
+            {
+              month: "Jan",
+              revenue: 420000,
+              expenses: 230000,
+              profit: 190000,
+              repairs: 102,
+            },
+          ]);
+
+          // Set repair type data
+          setRepairTypeData(
+            demoReports.top_repairs.map((repair: any, index: number) => ({
+              type: repair.type,
+              count: repair.count,
+              revenue: repair.revenue,
+              avgTicket: Math.round(repair.revenue / repair.count),
+              color: ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"][
+                index
+              ],
+            })),
+          );
+
+          // Set customer analytics
+          setCustomerAnalyticsData([
+            { segment: "Regular", count: 89, percentage: 57, revenue: 245000 },
+            { segment: "New", count: 45, percentage: 29, revenue: 98000 },
+            { segment: "VIP", count: 22, percentage: 14, revenue: 156000 },
+          ]);
+
+          // Set device brand data
+          setDeviceBrandData([
+            { brand: "iPhone", repairs: 45, revenue: 180000, avgTicket: 4000 },
+            { brand: "Samsung", repairs: 38, revenue: 152000, avgTicket: 4000 },
+            { brand: "OnePlus", repairs: 25, revenue: 75000, avgTicket: 3000 },
+            { brand: "Google", repairs: 18, revenue: 54000, avgTicket: 3000 },
+            { brand: "Others", repairs: 12, revenue: 24000, avgTicket: 2000 },
+          ]);
+
+          // Set top customers
+          setTopCustomersData([
+            {
+              name: "John Smith",
+              repairs: 8,
+              revenue: 32000,
+              lastVisit: "2024-01-15",
+            },
+            {
+              name: "Sarah Johnson",
+              repairs: 6,
+              revenue: 24000,
+              lastVisit: "2024-01-14",
+            },
+            {
+              name: "Mike Wilson",
+              repairs: 5,
+              revenue: 20000,
+              lastVisit: "2024-01-13",
+            },
+            {
+              name: "Emily Davis",
+              repairs: 4,
+              revenue: 16000,
+              lastVisit: "2024-01-12",
+            },
+            {
+              name: "David Brown",
+              repairs: 4,
+              revenue: 12000,
+              lastVisit: "2024-01-11",
+            },
+          ]);
+
+          // Set supplier spending
+          setSupplierSpendingData([
+            {
+              supplier: "TechParts India",
+              amount: 85000,
+              transactions: 12,
+              avgOrder: 7083,
+            },
+            {
+              supplier: "Mobile Components Ltd",
+              amount: 65000,
+              transactions: 8,
+              avgOrder: 8125,
+            },
+            {
+              supplier: "Gadget Suppliers Co",
+              amount: 45000,
+              transactions: 6,
+              avgOrder: 7500,
+            },
+          ]);
+        } catch (error) {
+          console.error("Failed to load demo reports:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [isDemoMode]);
 
   // Calculate totals from data
   const totals = {
