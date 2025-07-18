@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Shield, User, Crown, Wrench } from "lucide-react";
 
-type DemoRole = "admin" | "owner" | "worker";
+type DemoRole = "owner" | "worker";
 
 interface DemoRoleSwitcherProps {
   currentRole: DemoRole;
@@ -36,12 +36,6 @@ export function DemoRoleSwitcher({
   }
 
   const roleConfig = {
-    admin: {
-      label: "Admin",
-      icon: Shield,
-      description: "Full development and editing access",
-      color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
-    },
     owner: {
       label: "Owner",
       icon: Crown,

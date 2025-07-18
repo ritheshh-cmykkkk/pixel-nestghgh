@@ -65,9 +65,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { role } = useRole();
   const isDemoMode = localStorage.getItem("demo_mode") === "true";
-  const [demoRole, setDemoRole] = useState<"admin" | "owner" | "worker">(
-    "owner",
-  );
+  const [demoRole, setDemoRole] = useState<"owner" | "worker">("owner");
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
     null,
   );
