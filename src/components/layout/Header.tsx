@@ -240,11 +240,11 @@ export function Header({ onMenuClick }: HeaderProps) {
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium">
-                    {isDemoMode ? "Demo Admin" : user?.name || "User"}
+                    {isDemoMode ? "Demo User" : user?.name || "User"}
                   </p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
                     {isDemoMode
-                      ? "admin@demo.com"
+                      ? "demo@expo.com"
                       : user?.email || "user@example.com"}
                   </p>
                   {user?.shop_name && (
