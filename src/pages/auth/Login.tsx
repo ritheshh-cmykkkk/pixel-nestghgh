@@ -119,10 +119,10 @@ export default function Login() {
   };
 
   const handleDemoAuthentication = async () => {
-    // Create demo user data for expo purposes only
+    // Create secure demo user data for expo purposes only
     const demoUser = {
-      id: "demo-user-expo",
-      email: "demo@expo.com",
+      id: "demo-user-secured",
+      email: "demo@expo.local",
       name: "Demo User",
       role: "demo" as const,
       shop_name: "Demo Repair Shop",
@@ -130,7 +130,11 @@ export default function Login() {
     };
 
     const demoAuthData = {
-      token: "demo-token-expo-" + Date.now(),
+      token:
+        "demo-token-expo-" +
+        Date.now() +
+        "-" +
+        Math.random().toString(36).substring(7),
       user: demoUser,
       expires_in: 86400, // 24 hours
     };

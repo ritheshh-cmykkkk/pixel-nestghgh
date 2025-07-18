@@ -40,19 +40,20 @@ export function DemoRoleSwitcher({
       label: "Owner",
       icon: Crown,
       description: "Full business operational access",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+      color:
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
     },
     worker: {
       label: "Worker",
       icon: User,
       description: "Limited access with 24-hour restrictions",
       color:
-        "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200",
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
     },
   };
 
   return (
-    <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/50">
+    <Card className="border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <Wrench className="h-4 w-4" />

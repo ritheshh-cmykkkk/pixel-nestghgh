@@ -407,13 +407,13 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden border-l-4 border-l-green-500">
+        <Card className="relative overflow-hidden border-l-4 border-l-slate-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Today's Revenue
             </CardTitle>
-            <div className="p-2 bg-green-100 dark:bg-green-950 rounded-full">
-              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <DollarSign className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
@@ -446,13 +446,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-l-4 border-l-blue-500">
+        <Card className="relative overflow-hidden border-l-4 border-l-slate-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Today's Transactions
             </CardTitle>
-            <div className="p-2 bg-blue-100 dark:bg-blue-950 rounded-full">
-              <Wrench className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <Wrench className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
@@ -466,13 +466,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-l-4 border-l-purple-500">
+        <Card className="relative overflow-hidden border-l-4 border-l-slate-600">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Customers
             </CardTitle>
-            <div className="p-2 bg-purple-100 dark:bg-purple-950 rounded-full">
-              <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <Users className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
@@ -485,11 +485,11 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-l-4 border-l-orange-500">
+        <Card className="relative overflow-hidden border-l-4 border-l-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Bills</CardTitle>
-            <div className="p-2 bg-orange-100 dark:bg-orange-950 rounded-full">
-              <Receipt className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <Receipt className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>

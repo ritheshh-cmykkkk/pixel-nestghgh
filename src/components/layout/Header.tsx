@@ -118,25 +118,24 @@ export function Header({ onMenuClick }: HeaderProps) {
             <ConnectionIndicator />
           </div>
 
-          {/* Demo mode indicator */}
-          {isDemoMode && (
-            <Badge
-              variant="outline"
-              className="hidden sm:flex items-center gap-1 border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950/50 font-medium"
-            >
-              <Info className="h-3 w-3" />
-              Demo
-            </Badge>
-          )}
-
-          {/* Role indicator */}
+          {/* Role indicator - shows Demo for demo users, actual role for real users */}
           {user?.role && (
             <Badge
-              variant={user.role === "admin" ? "default" : "secondary"}
-              className="hidden sm:flex items-center gap-1"
+              variant={
+                isDemoMode
+                  ? "outline"
+                  : user.role === "admin"
+                    ? "default"
+                    : "secondary"
+              }
+              className={`hidden sm:flex items-center gap-1 font-medium ${
+                isDemoMode
+                  ? "border-slate-400 text-slate-600 bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:bg-slate-900/50"
+                  : ""
+              }`}
             >
               <Shield className="h-3 w-3" />
-              {user.role}
+              {isDemoMode ? "Demo" : user.role}
             </Badge>
           )}
 
@@ -244,7 +243,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
                     {isDemoMode
-                      ? "demo@expo.com"
+                      ? "demo@expo.local"
                       : user?.email || "user@example.com"}
                   </p>
                   {user?.shop_name && (

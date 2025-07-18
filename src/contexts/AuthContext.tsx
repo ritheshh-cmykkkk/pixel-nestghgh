@@ -47,23 +47,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (token && storedUser) {
         if (isDemoMode) {
-          // Demo mode - completely isolated, use demo data only
-          if (token.startsWith("demo-token")) {
-            setUser({
-              ...storedUser,
-              name: "Demo User",
-              email: "demo@expo.com",
-              role: "demo",
-            });
-          } else {
-            // Invalid demo token, clear and redirect
+          // Security: Strict demo mode validation
+          if (!token.startsWith("demo-token-expo-")) {
+            console.warn("Invalid demo token format detected");
             localStorage.clear();
             setUser(null);
+            return;
           }
+
+          // Security: Validate demo user data integrity
+          if (
+            storedUser.role !== "demo" ||
+            !storedUser.email?.includes("expo.local")
+          ) {
+            console.warn("Invalid demo user data detected");
+            localStorage.clear();
+            setUser(null);
+            return;
+          }
+
+          // Security: Set secure demo user
+          setUser({
+            ...storedUser,
+            id: "demo-user-secured",
+            name: "Demo User",
+            email: "demo@expo.local",
+            role: "demo",
+          });
         } else {
-          // Real user mode - verify JWT token with backend
+          // Security: Strict real user mode validation
           if (token.startsWith("demo-token")) {
-            // Demo token found in real mode, clear everything
+            console.warn("Demo token detected in real user mode");
+            localStorage.clear();
+            setUser(null);
+            return;
+          }
+
+          // Security: Validate token format
+          const tokenParts = token.split(".");
+          if (tokenParts.length !== 3) {
+            console.warn("Invalid JWT token format in AuthContext");
+            localStorage.clear();
+            setUser(null);
+            return;
+          }
+
+          // Security: Validate user data isn't demo contaminated
+          if (
+            storedUser.role === "demo" ||
+            storedUser.email?.includes("expo.local")
+          ) {
+            console.warn("Demo user data contamination detected");
             localStorage.clear();
             setUser(null);
             return;
@@ -71,9 +105,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           try {
             const currentUser = await AuthService.getCurrentUser();
+
+            // Security: Final validation of backend response
+            if (
+              currentUser.role === "demo" ||
+              currentUser.email?.includes("expo.local")
+            ) {
+              console.warn("Demo data returned from real backend");
+              localStorage.clear();
+              setUser(null);
+              return;
+            }
+
             setUser(currentUser);
           } catch (error) {
-            // JWT validation failed, clear auth data
+            console.warn("Backend user validation failed:", error);
             localStorage.removeItem("auth_token");
             localStorage.removeItem("user_data");
             setUser(null);
@@ -82,10 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("Auth initialization error:", error);
-      // Clear all auth data on any error
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_data");
-      localStorage.removeItem("demo_mode");
+      // Security: Clear all data on any unexpected error
+      localStorage.clear();
       setUser(null);
     } finally {
       setIsLoading(false);
