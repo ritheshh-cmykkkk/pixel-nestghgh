@@ -36,6 +36,7 @@ import {
   Plus,
   WifiOff,
   RefreshCw,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -60,6 +61,7 @@ interface RepairTypeData {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
     null,
   );
@@ -360,7 +362,9 @@ export default function Dashboard() {
             Welcome back, {user?.name || "Admin"}!
           </h1>
           <p className="text-muted-foreground mt-2">
-            Here's what's happening with your repair shop today.
+            {isDemoMode
+              ? "Explore this demo showcasing your repair shop management capabilities."
+              : "Here's what's happening with your repair shop today."}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -383,8 +387,19 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Demo Mode Alert */}
+      {isDemoMode && (
+        <Alert className="border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-200">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Demo Mode:</strong> You're viewing sample data. This
+            showcases the app's features without requiring a backend connection.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Offline Alert */}
-      {isOffline && (
+      {isOffline && !isDemoMode && (
         <Alert>
           <WifiOff className="h-4 w-4" />
           <AlertDescription>
