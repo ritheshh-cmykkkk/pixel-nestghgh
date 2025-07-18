@@ -1,53 +1,42 @@
-import { ReactNode, useState } from "react";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { Breadcrumbs } from "./Breadcrumbs";
-import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
 
-interface AppLayoutProps {
-  children: ReactNode;
-  showBreadcrumbs?: boolean;
-}
-
-export function AppLayout({
-  children,
-  showBreadcrumbs = true,
-}: AppLayoutProps) {
+export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useMobile();
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
+      {/* Sidebar for desktop */}
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && isMobile && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      {/* Main content */}
+      {/* Main content area */}
       <div className="lg:pl-64">
+        {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Breadcrumbs */}
-        {showBreadcrumbs && (
-          <div className="px-4 lg:px-6 py-2 border-b bg-muted/30">
-            <Breadcrumbs />
-          </div>
-        )}
-
-        {/* Main content area */}
-        <main className="p-4 lg:p-6 pb-20 lg:pb-6">
-          <div className="mx-auto max-w-7xl animate-in">{children}</div>
+        {/* Main content */}
+        <main className="min-h-[calc(100vh-64px)]">
+          <Outlet />
         </main>
-      </div>
 
-      {/* Mobile bottom navigation */}
-      <MobileBottomNav />
+        {/* Mobile bottom navigation */}
+        {isMobile && <MobileBottomNav />}
+      </div>
     </div>
   );
 }
+
+export default AppLayout;
