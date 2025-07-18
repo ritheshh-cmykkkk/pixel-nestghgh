@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 // Layout and Auth components
 import AppLayout from "@/components/layout/AppLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
 // Pages
 import Login from "./pages/auth/Login";
@@ -92,14 +93,35 @@ const App = () => (
                     <Route path="suppliers" element={<Suppliers />} />
                     <Route path="suppliers/:id" element={<SupplierDetails />} />
 
-                    {/* Financial routes */}
-                    <Route path="expenditures" element={<Expenditures />} />
+                    {/* Financial routes - Admin only */}
+                    <Route
+                      path="expenditures"
+                      element={
+                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                          <Expenditures />
+                        </RoleProtectedRoute>
+                      }
+                    />
 
-                    {/* Bill routes */}
-                    <Route path="bills" element={<Bills />} />
+                    {/* Bill routes - Admin only */}
+                    <Route
+                      path="bills"
+                      element={
+                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                          <Bills />
+                        </RoleProtectedRoute>
+                      }
+                    />
 
-                    {/* Report routes */}
-                    <Route path="reports" element={<Reports />} />
+                    {/* Report routes - Admin only */}
+                    <Route
+                      path="reports"
+                      element={
+                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                          <Reports />
+                        </RoleProtectedRoute>
+                      }
+                    />
 
                     {/* Settings routes */}
                     <Route path="settings" element={<Settings />} />
