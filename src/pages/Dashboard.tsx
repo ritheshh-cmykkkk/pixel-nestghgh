@@ -672,7 +672,7 @@ export default function Dashboard() {
                 return (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-4 border-2 border-border rounded-lg hover:bg-muted/50 hover:shadow-md transition-all duration-200"
                   >
                     <div className="flex items-center space-x-4">
                       <Avatar>
