@@ -42,15 +42,15 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="expenso-theme">
-      <AuthProvider>
-        <LanguageProvider>
-          <ConnectionProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="expenso-theme">
+        <AuthProvider>
+          <LanguageProvider>
+            <ConnectionProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
                 <Routes>
                   {/* Public authentication routes */}
                   <Route
@@ -137,13 +137,13 @@ const App = () => (
                     }
                   />
                 </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ConnectionProvider>
-        </LanguageProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+              </TooltipProvider>
+            </ConnectionProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;
