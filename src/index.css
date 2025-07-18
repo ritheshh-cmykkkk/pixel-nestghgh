@@ -30,6 +30,23 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
+    /* Status colors - light theme */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    /* Repair status colors - light theme */
+    --repair-pending: 38 92% 50%;
+    --repair-progress: 217 91% 60%;
+    --repair-completed: 142 76% 36%;
+    --repair-delivered: 147 64% 57%;
+
+    /* Stock level colors - light theme */
+    --stock-critical: 0 84% 60%;
+    --stock-low: 38 92% 50%;
+    --stock-good: 142 76% 36%;
+
     /* Sidebar colors */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222.2 84% 4.9%;
