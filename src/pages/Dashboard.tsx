@@ -174,23 +174,23 @@ export default function Dashboard() {
     ];
     setWeeklyRevenue(mockWeeklyData);
 
-    // Mock repair type data
+    // Mock repair type data with high contrast colors
     const mockRepairTypes: RepairTypeData[] = [
       {
         type: "Screen Replacement",
         count: 34,
         revenue: 102000,
-        color: "#3b82f6",
+        color: "#60a5fa",
       },
       {
         type: "Battery Replacement",
         count: 28,
         revenue: 56000,
-        color: "#dc2626",
+        color: "#f87171",
       },
-      { type: "Charging Port", count: 18, revenue: 45000, color: "#16a34a" },
-      { type: "Speaker Repair", count: 12, revenue: 24000, color: "#ca8a04" },
-      { type: "Camera Repair", count: 8, revenue: 32000, color: "#9333ea" },
+      { type: "Charging Port", count: 18, revenue: 45000, color: "#34d399" },
+      { type: "Speaker Repair", count: 12, revenue: 24000, color: "#fbbf24" },
+      { type: "Camera Repair", count: 8, revenue: 32000, color: "#a78bfa" },
     ];
     setRepairTypeData(mockRepairTypes);
 
