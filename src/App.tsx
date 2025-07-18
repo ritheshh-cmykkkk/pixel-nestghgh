@@ -7,6 +7,19 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectionProvider } from "@/contexts/ConnectionContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
+import { useRole } from "@/hooks/use-role";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+// Role-based home component
+function RoleBasedHome() {
+  const { isWorker } = useRole();
+
+  if (isWorker) {
+    return <Navigate to="/worker" replace />;
+  }
+
+  return <Dashboard />;
+}
 
 // Layout and Auth components
 import AppLayout from "@/components/layout/AppLayout";
@@ -16,6 +29,7 @@ import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 // Pages
 import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
+import WorkerHome from "./pages/WorkerHome";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
 import EditTransaction from "./pages/EditTransaction";
@@ -62,6 +76,7 @@ const App = () => (
                     }
                   />
 
+<<<<<<< HEAD
                   {/* Protected app routes with layout */}
                   <Route
                     path="/"
@@ -77,6 +92,29 @@ const App = () => (
                       path="dashboard"
                       element={<Navigate to="/" replace />}
                     />
+=======
+                {/* Main app routes */}
+                <Route path="/" element={<RoleBasedHome />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/worker"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["worker"]}
+                      redirectTo="/dashboard"
+                    >
+                      <WorkerHome />
+                    </ProtectedRoute>
+                  }
+                />
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
                     {/* Transaction routes */}
                     <Route path="transactions" element={<Transactions />} />
@@ -89,9 +127,21 @@ const App = () => (
                       element={<EditTransaction />}
                     />
 
+<<<<<<< HEAD
                     {/* Supplier routes */}
                     <Route path="suppliers" element={<Suppliers />} />
                     <Route path="suppliers/:id" element={<SupplierDetails />} />
+=======
+                {/* Inventory routes - Admin only */}
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Inventory />
+                    </ProtectedRoute>
+                  }
+                />
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
                     {/* Financial routes - Admin, Owner, and Demo (for expo) */}
                     <Route
@@ -105,6 +155,7 @@ const App = () => (
                       }
                     />
 
+<<<<<<< HEAD
                     {/* Bill routes - Admin, Owner, and Demo (for expo) */}
                     <Route
                       path="bills"
@@ -116,6 +167,17 @@ const App = () => (
                         </RoleProtectedRoute>
                       }
                     />
+=======
+                {/* Financial routes - Admin only */}
+                <Route
+                  path="/expenditures"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Expenditures />
+                    </ProtectedRoute>
+                  }
+                />
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
                     {/* Report routes - Admin, Owner, and Demo (for expo) */}
                     <Route
@@ -129,6 +191,7 @@ const App = () => (
                       }
                     />
 
+<<<<<<< HEAD
                     {/* Settings routes */}
                     <Route path="settings" element={<Settings />} />
                   </Route>
@@ -150,6 +213,37 @@ const App = () => (
       </ThemeProvider>
     </QueryClientProvider>
   </BrowserRouter>
+=======
+                {/* Report routes - Admin only */}
+                <Route
+                  path="/reports"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Reports />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Settings routes - Admin only */}
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ConnectionProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 );
 
 export default App;

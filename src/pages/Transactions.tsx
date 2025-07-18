@@ -1,6 +1,29 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DemoDataService from "@/lib/services/demo";
+=======
+import { useState, useMemo } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  createColumnHelper,
+  flexRender,
+} from "@tanstack/react-table";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useRole } from "@/hooks/use-role";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,10 +92,11 @@ interface Transaction {
   cost: number;
   profit: number;
   status: "pending" | "in-progress" | "completed" | "delivered";
-  paymentMethod: "cash" | "upi" | "card" | "bank-transfer";
+  paymentMethod: "cash" | "upi" | "card";
   freeGlass: boolean;
 }
 
+<<<<<<< HEAD
 export default function Transactions() {
   const { role } = useRole();
   const [data, setData] = useState<Transaction[]>([]);
@@ -82,6 +106,94 @@ export default function Transactions() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [isLoading, setIsLoading] = useState(true);
   const isDemoMode = localStorage.getItem("demo_mode") === "true";
+=======
+const mockTransactions: Transaction[] = [
+  {
+    id: "TXN-001",
+    date: new Date("2024-01-15"),
+    customer: "Rajesh Kumar",
+    phone: "+91 98765 43210",
+    device: "iPhone 14 Pro",
+    repairType: "screen-replacement",
+    cost: 12500,
+    profit: 4500,
+    status: "completed",
+    paymentMethod: "upi",
+    freeGlass: true,
+  },
+  {
+    id: "TXN-002",
+    date: new Date("2024-01-15"),
+    customer: "Priya Sharma",
+    phone: "+91 98765 43211",
+    device: "Samsung Galaxy S23",
+    repairType: "battery-replacement",
+    cost: 3500,
+    profit: 1500,
+    status: "in-progress",
+    paymentMethod: "cash",
+    freeGlass: false,
+  },
+  {
+    id: "TXN-003",
+    date: new Date("2024-01-14"),
+    customer: "Mohammed Ali",
+    phone: "+91 98765 43212",
+    device: "OnePlus 11",
+    repairType: "charging-port",
+    cost: 4500,
+    profit: 2000,
+    status: "pending",
+    paymentMethod: "card",
+    freeGlass: false,
+  },
+  {
+    id: "TXN-004",
+    date: new Date("2024-01-14"),
+    customer: "Sunita Devi",
+    phone: "+91 98765 43213",
+    device: "iPhone 13",
+    repairType: "screen-replacement",
+    cost: 15000,
+    profit: 5500,
+    status: "completed",
+    paymentMethod: "card",
+    freeGlass: true,
+  },
+  {
+    id: "TXN-005",
+    date: new Date("2024-01-13"),
+    customer: "Arjun Reddy",
+    phone: "+91 98765 43214",
+    device: "Google Pixel 7",
+    repairType: "camera-repair",
+    cost: 8500,
+    profit: 3500,
+    status: "delivered",
+    paymentMethod: "upi",
+    freeGlass: false,
+  },
+];
+
+const statusConfig = {
+  pending: { label: "pending", color: "status-pending" },
+  "in-progress": { label: "in-progress", color: "status-progress" },
+  completed: { label: "completed", color: "status-completed" },
+  delivered: { label: "delivered", color: "status-delivered" },
+};
+
+export default function Transactions() {
+  const { permissions, canDeleteTransaction } = useRole();
+  const [data, setData] = useState(mockTransactions);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [showProfits, setShowProfits] = useState(
+    localStorage.getItem("showProfits") === "true" &&
+      permissions.canViewProfits,
+  );
+  const { t } = useLanguage();
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
   // Load demo data for demo users
   useEffect(() => {
@@ -203,6 +315,7 @@ export default function Transactions() {
             <Phone className="mr-1 h-3 w-3" />
             {row.getValue("phone")}
           </div>
+<<<<<<< HEAD
         </div>
       ),
     },
@@ -340,6 +453,92 @@ export default function Transactions() {
     role === "worker"
       ? columns.filter((col) => col.accessorKey !== "profit")
       : columns;
+=======
+        ),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const canDelete = canDeleteTransaction(row.original.date);
+          const canEdit = permissions.canDeleteTransactions; // Use same permission for edit
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(row.original.id)}
+                >
+                  Copy transaction ID
+                </DropdownMenuItem>
+                {(canEdit || canDelete) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    {canEdit && (
+                      <DropdownMenuItem asChild>
+                        <Link to={`/transactions/${row.original.id}/edit`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit transaction
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete ? (
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(row.original.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete transaction
+                      </DropdownMenuItem>
+                    ) : (
+                      permissions.canDeleteTransactions && (
+                        <DropdownMenuItem
+                          disabled
+                          className="text-muted-foreground"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete (24h limit exceeded)
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      }),
+    ],
+    [showProfits, t],
+  );
+
+  const filteredData = useMemo(() => {
+    let transactions = data.filter((transaction) => {
+      const matchesStatus =
+        statusFilter === "all" || transaction.status === statusFilter;
+      const matchesPayment =
+        paymentFilter === "all" || transaction.paymentMethod === paymentFilter;
+      return matchesStatus && matchesPayment;
+    });
+
+    // Limit transactions for workers
+    if (
+      permissions.maxTransactionsView &&
+      transactions.length > permissions.maxTransactionsView
+    ) {
+      transactions = transactions.slice(0, permissions.maxTransactionsView);
+    }
+
+    return transactions;
+  }, [data, statusFilter, paymentFilter, permissions.maxTransactionsView]);
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
   const table = useReactTable({
     data: role === "worker" ? data.slice(0, 10) : data, // Limit data for workers
@@ -361,6 +560,7 @@ export default function Transactions() {
     },
   });
 
+<<<<<<< HEAD
   return (
     <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
@@ -369,6 +569,81 @@ export default function Transactions() {
           <p className="text-muted-foreground mt-2">
             Manage all repair transactions and customer orders
           </p>
+=======
+  const handleDelete = (id: string) => {
+    setData((prev) => prev.filter((transaction) => transaction.id !== id));
+    toast({
+      title: "Transaction Deleted",
+      description: "Transaction has been removed successfully.",
+      variant: "destructive",
+    });
+  };
+
+  const toggleProfits = () => {
+    if (!permissions.canViewProfits) return;
+    const newValue = !showProfits;
+    setShowProfits(newValue);
+    localStorage.setItem("showProfits", newValue.toString());
+  };
+
+  const exportToExcel = () => {
+    // In a real app, this would export to Excel
+    toast({
+      title: "Export Started",
+      description: "Exporting transactions to Excel format...",
+    });
+  };
+
+  return (
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {t("transactions")}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {permissions.maxTransactionsView
+                ? `View recent transactions (limited to ${permissions.maxTransactionsView} entries) • Can delete within 24 hours`
+                : "Manage and track all repair transactions"}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {permissions.canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToExcel}
+              className="h-10 sm:h-9"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {t("export")}
+            </Button>
+            {permissions.canDeleteTransactions && (
+              <Link to="/transactions/new">
+                <Button size="sm" className="h-10 sm:h-9">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("new-transaction")}
+                </Button>
+              </Link>
+            )}
+          </div>
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
@@ -408,6 +683,7 @@ export default function Transactions() {
                   className="pl-9"
                 />
               </div>
+<<<<<<< HEAD
               <Select
                 value={
                   (table.getColumn("status")?.getFilterValue() as string) ?? ""
@@ -430,6 +706,35 @@ export default function Transactions() {
                   <SelectItem value="delivered">Delivered</SelectItem>
                 </SelectContent>
               </Select>
+=======
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">{t("pending")}</SelectItem>
+                    <SelectItem value="in-progress">
+                      {t("in-progress")}
+                    </SelectItem>
+                    <SelectItem value="completed">{t("completed")}</SelectItem>
+                    <SelectItem value="delivered">{t("delivered")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All Payments" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payments</SelectItem>
+                    <SelectItem value="cash">{t("cash")}</SelectItem>
+                    <SelectItem value="upi">{t("upi")}</SelectItem>
+                    <SelectItem value="card">{t("card")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
             </div>
           </div>
 

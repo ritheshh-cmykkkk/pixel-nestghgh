@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRole } from "@/hooks/use-role";
+<<<<<<< HEAD
 import {
   LayoutDashboard,
   CreditCard,
@@ -61,6 +62,10 @@ const navigation = [
     roles: ["admin", "owner", "worker", "demo"],
   },
 ];
+=======
+import { getNavigationForRole } from "@/lib/navigation";
+import { X, Smartphone } from "lucide-react";
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
 interface SidebarProps {
   open: boolean;
@@ -72,10 +77,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { t } = useLanguage();
   const { role } = useRole();
 
+<<<<<<< HEAD
   // Filter navigation items based on user role
   const filteredNavigation = navigation.filter((item) =>
     item.roles.includes(role),
   );
+=======
+  const navigation = getNavigationForRole(role);
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
   const isActive = (item: (typeof navigation)[0]) => {
     if (item.exact) {

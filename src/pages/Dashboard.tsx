@@ -22,6 +22,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   DollarSign,
+<<<<<<< HEAD
   Users,
   Wrench,
   Package,
@@ -37,15 +38,27 @@ import {
   WifiOff,
   RefreshCw,
   Info,
+=======
+  Eye,
+  EyeOff,
+  ShoppingCart,
+  Zap,
+  FileText,
+  Receipt,
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/use-role";
 import { StatisticsService, DashboardStats } from "@/lib/services/statistics";
 import { TransactionService, Transaction } from "@/lib/services/transactions";
 import { toast } from "@/hooks/use-toast";
 import { DemoRoleSwitcher } from "@/components/demo/DemoRoleSwitcher";
+=======
+import { useRole } from "@/hooks/use-role";
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
 
 interface ChartData {
   day: string;
@@ -54,6 +67,7 @@ interface ChartData {
   profit: number;
 }
 
+<<<<<<< HEAD
 interface RepairTypeData {
   type: string;
   count: number;
@@ -68,6 +82,136 @@ export default function Dashboard() {
   const [demoRole, setDemoRole] = useState<"owner" | "worker">("owner");
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
     null,
+=======
+const repairTypeData = [
+  { type: "Screen", count: 124, revenue: 371200, color: "#2563eb" },
+  { type: "Battery", count: 89, revenue: 178000, color: "#dc2626" },
+  { type: "Charging Port", count: 56, revenue: 140000, color: "#16a34a" },
+  { type: "Speaker", count: 34, revenue: 68000, color: "#ca8a04" },
+  { type: "Camera", count: 28, revenue: 84000, color: "#9333ea" },
+  { type: "Water Damage", count: 22, revenue: 132000, color: "#0891b2" },
+];
+
+const recentTransactions = [
+  {
+    id: 1,
+    customer: "Rajesh Kumar",
+    phone: "+91 98765 43210",
+    device: "iPhone 14 Pro",
+    repair: "Screen Replacement",
+    amount: 12500,
+    cost: 8000,
+    profit: 4500,
+    status: "completed",
+    date: "Today",
+    time: "2:30 PM",
+    paymentMethod: "upi",
+  },
+  {
+    id: 2,
+    customer: "Priya Sharma",
+    phone: "+91 98765 43211",
+    device: "Samsung Galaxy S23",
+    repair: "Battery Replacement",
+    amount: 3500,
+    cost: 2000,
+    profit: 1500,
+    status: "in-progress",
+    date: "Today",
+    time: "1:15 PM",
+    paymentMethod: "cash",
+  },
+  {
+    id: 3,
+    customer: "Mohammed Ali",
+    phone: "+91 98765 43212",
+    device: "OnePlus 11",
+    repair: "Charging Port",
+    amount: 4500,
+    cost: 2500,
+    profit: 2000,
+    status: "pending",
+    date: "Today",
+    time: "11:45 AM",
+    paymentMethod: "card",
+  },
+  {
+    id: 4,
+    customer: "Sunita Devi",
+    phone: "+91 98765 43213",
+    device: "iPhone 13",
+    repair: "Screen + Battery",
+    amount: 15000,
+    cost: 9500,
+    profit: 5500,
+    status: "completed",
+    date: "Yesterday",
+    time: "4:20 PM",
+    paymentMethod: "card",
+  },
+  {
+    id: 5,
+    customer: "Arjun Reddy",
+    phone: "+91 98765 43214",
+    device: "Google Pixel 7",
+    repair: "Camera Module",
+    amount: 8500,
+    cost: 5000,
+    profit: 3500,
+    status: "delivered",
+    date: "Yesterday",
+    time: "2:10 PM",
+    paymentMethod: "upi",
+  },
+];
+
+const lowStockItems = [
+  { item: "iPhone 14 Pro Screen", stock: 2, minStock: 5, critical: true },
+  { item: "Samsung S23 Battery", stock: 4, minStock: 8, critical: false },
+  { item: "USB-C Port Module", stock: 1, minStock: 6, critical: true },
+  { item: "iPhone 13 Camera", stock: 3, minStock: 5, critical: true },
+  { item: "Screen Protectors", stock: 15, minStock: 50, critical: false },
+];
+
+const statusConfig = {
+  pending: {
+    label: "pending",
+    color: "status-pending",
+    icon: Clock,
+    bgColor: "bg-repair-pending/10",
+  },
+  "in-progress": {
+    label: "in-progress",
+    color: "status-progress",
+    icon: Wrench,
+    bgColor: "bg-repair-progress/10",
+  },
+  completed: {
+    label: "completed",
+    color: "status-completed",
+    icon: CheckCircle,
+    bgColor: "bg-repair-completed/10",
+  },
+  delivered: {
+    label: "delivered",
+    color: "status-delivered",
+    icon: CheckCircle,
+    bgColor: "bg-repair-delivered/10",
+  },
+};
+
+const paymentMethodIcons = {
+  cash: DollarSign,
+  upi: Smartphone,
+  card: CreditCard,
+};
+
+export default function Dashboard() {
+  const { permissions, isWorker } = useRole();
+  const [showProfits, setShowProfits] = useState(
+    localStorage.getItem("showProfits") === "true" &&
+      permissions.canViewProfits,
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   );
   const [weeklyRevenue, setWeeklyRevenue] = useState<ChartData[]>([]);
   const [repairTypeData, setRepairTypeData] = useState<RepairTypeData[]>([]);
@@ -78,6 +222,7 @@ export default function Dashboard() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+<<<<<<< HEAD
   useEffect(() => {
     loadDashboardData();
 
@@ -129,6 +274,13 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false);
     }
+=======
+  const toggleProfits = () => {
+    if (!permissions.canViewProfits) return;
+    const newValue = !showProfits;
+    setShowProfits(newValue);
+    localStorage.setItem("showProfits", newValue.toString());
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   };
 
   const loadDemoData = async () => {
@@ -359,6 +511,7 @@ export default function Dashboard() {
   }
 
   return (
+<<<<<<< HEAD
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -443,6 +596,249 @@ export default function Dashboard() {
                 <span className="text-muted-foreground">No data available</span>
               )}
             </p>
+=======
+    <AppLayout showBreadcrumbs={false}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {t("dashboard")}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Welcome back! Here's your repair shop overview for today.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" size="sm" className="h-10 sm:h-9">
+              <Calendar className="mr-2 h-4 w-4" />
+              Today: {new Date().toLocaleDateString()}
+            </Button>
+            {permissions.canViewProfits && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleProfits}
+                className="h-10 sm:h-9"
+              >
+                {showProfits ? (
+                  <EyeOff className="mr-2 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-2 h-4 w-4" />
+                )}
+                {showProfits ? "Hide Profits" : "Show Profits"}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Key Metrics Cards */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+          <Card className="card-hover">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("today-revenue")}
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">
+                ₹{todayRevenue.toLocaleString()}
+              </div>
+              {showProfits && todayProfit && (
+                <div className="text-sm text-muted-foreground">
+                  Profit: ₹{todayProfit.toLocaleString()}
+                </div>
+              )}
+              <div className="flex items-center text-xs text-success">
+                <ArrowUpRight className="h-3 w-3 mr-1" />
+                +18.2% from yesterday
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-hover">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("pending-repairs")}
+              </CardTitle>
+              <Clock className="h-4 w-4 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">
+                {pendingRepairs}
+              </div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                5 in progress, 2 new
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-hover">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("inventory-alerts")}
+              </CardTitle>
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">
+                {inventoryAlerts}
+              </div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                Critical stock items
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-hover">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Weekly Total
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{weeklyTotal.toLocaleString()}
+              </div>
+              {showProfits && weeklyProfitTotal && (
+                <div className="text-sm text-muted-foreground">
+                  Profit: ₹{weeklyProfitTotal.toLocaleString()}
+                </div>
+              )}
+              <div className="flex items-center text-xs text-success">
+                <ArrowUpRight className="h-3 w-3 mr-1" />
+                +12.5% from last week
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Device Models Summary - Worker gets limited view */}
+        {isWorker && (
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">
+                Supported Device Models
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Device models you can work with (+ custom models)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  "iPhone 15 Pro",
+                  "iPhone 14",
+                  "Samsung S24",
+                  "OnePlus 12",
+                  "Google Pixel",
+                  "Others",
+                ].map((model) => (
+                  <div
+                    key={model}
+                    className="flex items-center gap-2 p-2 rounded-lg border"
+                  >
+                    <Smartphone className="h-4 w-4 text-primary" />
+                    <span className="text-sm">{model}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg sm:text-xl">
+              {t("quick-actions")}
+            </CardTitle>
+            <CardDescription className="text-sm">
+              {isWorker
+                ? "Available operations for workers"
+                : "Frequently used repair shop operations"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent
+            className={cn(
+              "grid gap-3",
+              isWorker
+                ? "grid-cols-2 sm:grid-cols-3"
+                : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
+            )}
+          >
+            {/* Available to all roles */}
+            <Link to="/customers/new">
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col gap-2 w-full"
+              >
+                <Users className="h-6 w-6" />
+                <span className="text-xs">Add New Customer</span>
+              </Button>
+            </Link>
+            <Link to="/bills/new">
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col gap-2 w-full"
+              >
+                <Receipt className="h-6 w-6" />
+                <span className="text-xs">Generate Bill</span>
+              </Button>
+            </Link>
+            <Link to="/suppliers">
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col gap-2 w-full"
+              >
+                <Users className="h-6 w-6" />
+                <span className="text-xs">Supplier Analysis</span>
+              </Button>
+            </Link>
+
+            {/* Admin-only actions */}
+            {!isWorker && (
+              <>
+                <Link to="/transactions/new">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Plus className="h-6 w-6" />
+                    <span className="text-xs">{t("new-transaction")}</span>
+                  </Button>
+                </Link>
+                <Link to="/inventory">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <Package className="h-6 w-6" />
+                    <span className="text-xs">{t("add-inventory")}</span>
+                  </Button>
+                </Link>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-xs">{t("record-payment")}</span>
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col gap-2">
+                  <ShoppingCart className="h-6 w-6" />
+                  <span className="text-xs">Order Parts</span>
+                </Button>
+                <Link to="/reports">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 w-full"
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span className="text-xs">View Reports</span>
+                  </Button>
+                </Link>
+              </>
+            )}
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
           </CardContent>
         </Card>
 
@@ -455,6 +851,7 @@ export default function Dashboard() {
               <Wrench className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
           </CardHeader>
+<<<<<<< HEAD
           <CardContent>
             <div className="text-2xl font-bold">
               {dashboardStats?.transactions.today || 0}
@@ -730,6 +1127,90 @@ export default function Dashboard() {
                   </div>
                 );
               })}
+=======
+          <CardContent className="px-3 sm:px-6">
+            <div className="space-y-3 sm:space-y-4">
+              {recentTransactions
+                .slice(0, isWorker ? 3 : 5)
+                .map((transaction) => {
+                  const StatusIcon =
+                    statusConfig[
+                      transaction.status as keyof typeof statusConfig
+                    ].icon;
+                  const PaymentIcon =
+                    paymentMethodIcons[
+                      transaction.paymentMethod as keyof typeof paymentMethodIcons
+                    ];
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-3 sm:p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-medium text-sm sm:text-base">
+                                  {transaction.customer}
+                                </p>
+                                <Badge
+                                  className={cn(
+                                    "text-xs flex-shrink-0",
+                                    statusConfig[
+                                      transaction.status as keyof typeof statusConfig
+                                    ].color,
+                                  )}
+                                >
+                                  <StatusIcon className="h-3 w-3 mr-1" />
+                                  {t(
+                                    statusConfig[
+                                      transaction.status as keyof typeof statusConfig
+                                    ].label,
+                                  )}
+                                </Badge>
+                              </div>
+                              <div className="text-xs sm:text-sm text-muted-foreground">
+                                <span className="font-medium">
+                                  {transaction.device}
+                                </span>
+                                {" • "}
+                                <span>
+                                  {t(transaction.repair.toLowerCase())}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>
+                                  {transaction.date} at {transaction.time}
+                                </span>
+                                <PaymentIcon className="h-3 w-3" />
+                                <span>{t(transaction.paymentMethod)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-end gap-4">
+                              <div className="text-right">
+                                <div className="font-semibold text-sm sm:text-base">
+                                  ₹{transaction.amount.toLocaleString()}
+                                </div>
+                                {showProfits && (
+                                  <div className="text-xs text-success">
+                                    Profit: ₹
+                                    {transaction.profit.toLocaleString()}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+>>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
             </div>
           ) : (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
