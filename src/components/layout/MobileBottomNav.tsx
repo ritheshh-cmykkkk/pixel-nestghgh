@@ -8,34 +8,20 @@ import {
   Users,
   Receipt,
   Settings,
-  Users,
 } from "lucide-react";
 
-// Mobile navigation items that will be filtered by role
-const mobileNavigationItems = [
+const mobileNavigation = [
   {
     name: "dashboard",
     href: "/",
     icon: LayoutDashboard,
     exact: true,
-<<<<<<< HEAD
     roles: ["admin", "owner", "worker", "demo"],
-=======
-    allowedRoles: ["admin"],
-  },
-  {
-    name: "home",
-    href: "/worker",
-    icon: LayoutDashboard,
-    exact: true,
-    allowedRoles: ["worker"],
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
-<<<<<<< HEAD
     roles: ["admin", "owner", "worker", "demo"],
   },
   {
@@ -43,41 +29,18 @@ const mobileNavigationItems = [
     href: "/suppliers",
     icon: Users,
     roles: ["admin", "owner", "worker", "demo"],
-=======
-    allowedRoles: ["admin", "worker"],
-  },
-  {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
-    allowedRoles: ["admin"], // Only admin can access inventory
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
-<<<<<<< HEAD
     roles: ["admin", "owner", "demo"],
-=======
-    allowedRoles: ["admin", "worker"],
-  },
-  {
-    name: "suppliers",
-    href: "/suppliers",
-    icon: Users,
-    allowedRoles: ["admin", "worker"],
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
-<<<<<<< HEAD
     roles: ["admin", "owner", "worker", "demo"],
-=======
-    allowedRoles: ["admin"],
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   },
 ];
 
@@ -86,18 +49,12 @@ export function MobileBottomNav() {
   const { t } = useLanguage();
   const { role } = useRole();
 
-<<<<<<< HEAD
   // Filter navigation items based on user role
   const filteredNavigation = mobileNavigation.filter((item) =>
     item.roles.includes(role),
-=======
-  // Filter navigation items based on role
-  const mobileNavigation = mobileNavigationItems.filter((item) =>
-    item.allowedRoles.includes(role),
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
   );
 
-  const isActive = (item: (typeof mobileNavigation)[0]) => {
+  const isActive = (item: (typeof filteredNavigation)[0]) => {
     if (item.exact) {
       return location.pathname === item.href;
     }
@@ -109,17 +66,10 @@ export function MobileBottomNav() {
       <div
         className={cn(
           "grid px-2 py-2",
-<<<<<<< HEAD
           `grid-cols-${filteredNavigation.length}`,
         )}
       >
         {filteredNavigation.map((item) => (
-=======
-          mobileNavigation.length <= 4 ? "grid-cols-4" : "grid-cols-5",
-        )}
-      >
-        {mobileNavigation.map((item) => (
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
           <Link
             key={item.name}
             to={item.href}
