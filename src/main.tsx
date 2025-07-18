@@ -4,6 +4,9 @@ import "./index.css";
 import App from "./App.tsx";
 import PWAManager from "./lib/pwa";
 
+// Apply console warning filters for known third-party library warnings
+import "./lib/console-filter";
+
 // Initialize PWA features
 const pwa = PWAManager.getInstance();
 
