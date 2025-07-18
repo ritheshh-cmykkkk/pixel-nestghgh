@@ -85,6 +85,43 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+  // Load demo data for demo users
+  useEffect(() => {
+    const loadData = async () => {
+      if (isDemoMode) {
+        try {
+          const demoSuppliers = await DemoDataService.getDemoSuppliers("owner");
+          setSuppliers(
+            demoSuppliers.map((sup: any) => ({
+              id: sup.id,
+              name: sup.name,
+              contactPerson: sup.contact_person,
+              phone: sup.phone,
+              email: sup.email,
+              address: sup.address,
+              status: "active" as const,
+              paymentTerms: "30 days",
+              category: "Electronics",
+              totalOrders: Math.floor(Math.random() * 50) + 10,
+              totalAmount: Math.floor(Math.random() * 100000) + 50000,
+              lastOrderDate: new Date(sup.created_at).toLocaleDateString(),
+              _demoWorkerCanAccess: sup._demoWorkerCanAccess,
+              _demoWorkerCanDelete: sup._demoWorkerCanDelete,
+              _demoRestrictionNote: sup._demoRestrictionNote,
+            })),
+          );
+        } catch (error) {
+          console.error("Failed to load demo suppliers:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [isDemoMode]);
 
   const [newSupplier, setNewSupplier] = useState({
     name: "",
