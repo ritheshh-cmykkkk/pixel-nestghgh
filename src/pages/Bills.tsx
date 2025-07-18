@@ -456,7 +456,7 @@ export default function Bills() {
                               Number(e.target.value),
                             )
                           }
-                          min="1"
+                          min="0"
                         />
                       </div>
                       <div className="col-span-2 space-y-2">
