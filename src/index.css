@@ -124,9 +124,11 @@
 }
 
 @layer components {
-  /* Enhanced gradient for branding */
+  /* Enhanced high-contrast gradient for branding */
   .expenso-gradient {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.25);
   }
 
   /* Smooth transitions for interactive elements */
