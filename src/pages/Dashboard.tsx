@@ -293,13 +293,14 @@ export default function Dashboard() {
   };
 
   const getRepairTypeColor = (index: number): string => {
+    // High contrast colors optimized for dark themes
     const colors = [
-      "#3b82f6",
-      "#dc2626",
-      "#16a34a",
-      "#ca8a04",
-      "#9333ea",
-      "#0891b2",
+      "#60a5fa", // Bright blue
+      "#f87171", // Bright red
+      "#34d399", // Bright green
+      "#fbbf24", // Bright yellow
+      "#a78bfa", // Bright purple
+      "#06b6d4", // Bright cyan
     ];
     return colors[index % colors.length];
   };
