@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   CreditCard,
-  Package,
+  Users,
   Receipt,
   Settings,
 } from "lucide-react";
@@ -15,32 +16,43 @@ const mobileNavigation = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
+    roles: ["admin", "worker"],
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
+    roles: ["admin", "worker"],
   },
   {
-    name: "inventory",
-    href: "/inventory",
-    icon: Package,
+    name: "suppliers",
+    href: "/suppliers",
+    icon: Users,
+    roles: ["admin", "worker"],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
+    roles: ["admin"],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
+    roles: ["admin", "worker"],
   },
 ];
 
 export function MobileBottomNav() {
   const location = useLocation();
   const { t } = useLanguage();
+  const { role } = useRole();
+
+  // Filter navigation items based on user role
+  const filteredNavigation = mobileNavigation.filter((item) =>
+    item.roles.includes(role),
+  );
 
   const isActive = (item: (typeof mobileNavigation)[0]) => {
     if (item.exact) {
@@ -51,8 +63,13 @@ export function MobileBottomNav() {
 
   return (
     <nav className="mobile-nav fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur border-t border-border safe-area-bottom">
-      <div className="grid grid-cols-5 px-2 py-2">
-        {mobileNavigation.map((item) => (
+      <div
+        className={cn(
+          "grid px-2 py-2",
+          `grid-cols-${filteredNavigation.length}`,
+        )}
+      >
+        {filteredNavigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}
