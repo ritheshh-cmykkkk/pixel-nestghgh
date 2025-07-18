@@ -419,22 +419,8 @@ export class DemoDataService {
   }
 
   // Get role-specific demo experience descriptions
-  static getRoleExperienceInfo(role: "admin" | "owner" | "worker") {
+  static getRoleExperienceInfo(role: "owner" | "worker") {
     const roleInfo = {
-      admin: {
-        title: "Admin Experience",
-        description: "Complete development and system access",
-        capabilities: [
-          "Full system configuration",
-          "User management and roles",
-          "Development tools access",
-          "All business operations",
-          "Complete historical data",
-          "System settings and security",
-        ],
-        restrictions: [],
-        color: "red",
-      },
       owner: {
         title: "Owner Experience",
         description: "Complete business operational control",
@@ -446,7 +432,7 @@ export class DemoDataService {
           "Complete historical data",
           "Business settings control",
         ],
-        restrictions: ["No development/system configuration"],
+        restrictions: ["Admin role reserved for developer only"],
         color: "blue",
       },
       worker: {
