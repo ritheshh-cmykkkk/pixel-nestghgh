@@ -80,6 +80,43 @@ export default function Transactions() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+  // Load demo data for demo users
+  useEffect(() => {
+    const loadData = async () => {
+      if (isDemoMode) {
+        try {
+          const demoTransactions =
+            await DemoDataService.getRoleBasedTransactions("owner");
+          setData(
+            demoTransactions.map((txn: any) => ({
+              id: txn.id,
+              date: new Date(txn.created_at),
+              customer: txn.customer_name,
+              phone: txn.customer_phone,
+              device: txn.device_model,
+              repairType: txn.repair_type,
+              cost: txn.cost,
+              profit: txn.profit,
+              status: txn.status,
+              paymentMethod: txn.payment_method,
+              freeGlass: txn.free_glass,
+              _demoWorkerCanAccess: txn._demoWorkerCanAccess,
+              _demoWorkerCanDelete: txn._demoWorkerCanDelete,
+              _demoRestrictionNote: txn._demoRestrictionNote,
+            })),
+          );
+        } catch (error) {
+          console.error("Failed to load demo transactions:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [isDemoMode]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
