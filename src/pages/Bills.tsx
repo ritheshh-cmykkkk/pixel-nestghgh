@@ -89,6 +89,45 @@ export default function Bills() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
+
+  // Load demo data for demo users
+  useEffect(() => {
+    const loadData = async () => {
+      if (isDemoMode) {
+        try {
+          const demoBills = await DemoDataService.getDemoBills();
+          setBills(
+            demoBills.map((bill: any) => ({
+              id: bill.id,
+              customerName: bill.supplier_name,
+              customerPhone: "+91 9876543210",
+              customerEmail: `${bill.supplier_name.toLowerCase().replace(/\s+/g, "")}@supplier.com`,
+              date: new Date(bill.created_at).toLocaleDateString(),
+              amount: bill.amount,
+              status: bill.status,
+              items: [
+                {
+                  description: "Parts and Services",
+                  quantity: 1,
+                  rate: bill.amount,
+                  amount: bill.amount,
+                },
+              ],
+              notes: `Bill from ${bill.supplier_name}`,
+              dueDate: new Date(bill.due_date).toLocaleDateString(),
+            })),
+          );
+        } catch (error) {
+          console.error("Failed to load demo bills:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [isDemoMode]);
 
   const [newBill, setNewBill] = useState({
     customerName: "",
