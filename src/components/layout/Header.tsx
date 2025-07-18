@@ -22,6 +22,7 @@ import {
   Monitor,
   WifiOff,
   Shield,
+  Info,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -42,6 +43,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isOffline] = useState(!navigator.onLine);
+  const isDemoMode = localStorage.getItem("demo_mode") === "true";
 
   const handleLogout = async () => {
     try {
@@ -115,6 +117,17 @@ export function Header({ onMenuClick }: HeaderProps) {
           <div className="hidden sm:flex">
             <ConnectionIndicator />
           </div>
+
+          {/* Demo mode indicator */}
+          {isDemoMode && (
+            <Badge
+              variant="outline"
+              className="hidden sm:flex items-center gap-1 border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/50"
+            >
+              <Info className="h-3 w-3" />
+              Demo Mode
+            </Badge>
+          )}
 
           {/* Role indicator */}
           {user?.role && (
