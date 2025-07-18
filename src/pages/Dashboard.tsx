@@ -208,7 +208,7 @@ export default function Dashboard() {
 
   if (isLoading && !dashboardStats) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-6 p-4 md:p-6 lg:p-8">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
@@ -220,7 +220,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
