@@ -210,6 +210,268 @@ export class DemoDataService {
     const delay = Math.random() * (max - min) + min;
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
+
+  // Role-based dashboard stats for demo
+  static async getRoleBasedDashboardStats(
+    role: string = "owner",
+  ): Promise<DashboardStats> {
+    await this.simulateApiDelay();
+
+    const baseStats = await this.getDashboardStats();
+
+    // Worker role sees limited data to demonstrate restrictions
+    if (role === "worker") {
+      return {
+        ...baseStats,
+        revenue: {
+          today: baseStats.revenue.today,
+          yesterday: baseStats.revenue.yesterday,
+          this_month: 0, // Workers don't see monthly totals
+          last_month: 0,
+          growth_percentage: baseStats.revenue.growth_percentage,
+        },
+        transactions: {
+          today: baseStats.transactions.today,
+          pending: baseStats.transactions.pending,
+          completed: 5, // Only recent completions
+          total_this_month: 0, // Limited historical data
+          growth_percentage: baseStats.transactions.growth_percentage,
+        },
+        customers: {
+          total: 0, // Workers don't see total customer count
+          new_this_month: 0,
+          active: 12, // Only today's active customers
+          growth_percentage: 0,
+        },
+        bills: {
+          pending: 0, // Workers don't handle bills
+          overdue: 0,
+          paid_this_month: 0,
+          total_amount_pending: 0,
+        },
+      };
+    }
+
+    return baseStats;
+  }
+
+  // Role-based transactions for demo
+  static async getRoleBasedTransactions(
+    role: string = "owner",
+  ): Promise<Transaction[]> {
+    const allTransactions = await this.getRecentTransactions();
+
+    if (role === "worker") {
+      // Add demo metadata to show worker restrictions
+      return allTransactions.map((txn) => ({
+        ...txn,
+        _demoWorkerCanAccess: this.isWithin24Hours(txn.created_at),
+        _demoWorkerCanDelete: this.isWithin24Hours(txn.created_at),
+        _demoRestrictionNote: this.isWithin24Hours(txn.created_at)
+          ? "Worker can edit/delete (within 24hrs)"
+          : "Worker cannot edit/delete (over 24hrs old)",
+      }));
+    }
+
+    return allTransactions;
+  }
+
+  // Mock suppliers for demo
+  static async getDemoSuppliers(role: string = "owner") {
+    await this.simulateApiDelay();
+
+    const suppliers = [
+      {
+        id: "SUP-001",
+        name: "TechParts India",
+        contact_person: "Rajesh Kumar",
+        phone: "+91 9876543210",
+        email: "rajesh@techpartsindia.com",
+        address: "Electronics Market, Delhi",
+        created_at: new Date(Date.now() - 172800000).toISOString(), // 48 hours ago
+      },
+      {
+        id: "SUP-002",
+        name: "Mobile Components Ltd",
+        contact_person: "Priya Sharma",
+        phone: "+91 9876543211",
+        email: "priya@mobilecomponents.com",
+        address: "Tech Hub, Bangalore",
+        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      },
+      {
+        id: "SUP-003",
+        name: "Gadget Suppliers Co",
+        contact_person: "Ahmed Khan",
+        phone: "+91 9876543212",
+        email: "ahmed@gadgetsuppliers.com",
+        address: "Tech Plaza, Mumbai",
+        created_at: new Date().toISOString(), // Just now
+      },
+    ];
+
+    if (role === "worker") {
+      return suppliers.map((sup) => ({
+        ...sup,
+        _demoWorkerCanAccess: this.isWithin24Hours(sup.created_at),
+        _demoWorkerCanDelete: this.isWithin24Hours(sup.created_at),
+        _demoRestrictionNote: this.isWithin24Hours(sup.created_at)
+          ? "Worker can edit/delete (within 24hrs)"
+          : "Worker cannot edit/delete (over 24hrs old)",
+      }));
+    }
+
+    return suppliers;
+  }
+
+  // Mock expenditures for demo (admin/owner only in real app)
+  static async getDemoExpenditures() {
+    await this.simulateApiDelay();
+
+    return [
+      {
+        id: "EXP-001",
+        description: "Office Rent - January",
+        amount: 25000,
+        category: "rent",
+        date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: "EXP-002",
+        description: "Inventory Purchase - Screen Parts",
+        amount: 45000,
+        category: "inventory",
+        date: new Date(Date.now() - 86400000).toISOString(),
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+      },
+      {
+        id: "EXP-003",
+        description: "Staff Salaries",
+        amount: 80000,
+        category: "salary",
+        date: new Date(Date.now() - 172800000).toISOString(),
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+      },
+    ];
+  }
+
+  // Mock bills for demo (admin/owner only in real app)
+  static async getDemoBills() {
+    await this.simulateApiDelay();
+
+    return [
+      {
+        id: "BILL-001",
+        supplier_name: "TechParts India",
+        amount: 15000,
+        due_date: new Date(Date.now() + 86400000).toISOString(),
+        status: "pending",
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: "BILL-002",
+        supplier_name: "Mobile Components Ltd",
+        amount: 8500,
+        due_date: new Date(Date.now() - 86400000).toISOString(),
+        status: "overdue",
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+      },
+      {
+        id: "BILL-003",
+        supplier_name: "Gadget Suppliers Co",
+        amount: 12000,
+        due_date: new Date(Date.now() + 172800000).toISOString(),
+        status: "pending",
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ];
+  }
+
+  // Mock reports for demo (admin/owner only in real app)
+  static async getDemoReports() {
+    await this.simulateApiDelay();
+
+    return {
+      monthly_revenue: 384500,
+      monthly_profit: 142800,
+      monthly_costs: 241700,
+      profit_margin: 37.1,
+      top_repairs: [
+        { type: "Screen Replacement", count: 34, revenue: 102000 },
+        { type: "Battery Replacement", count: 28, revenue: 56000 },
+        { type: "Charging Port", count: 18, revenue: 45000 },
+        { type: "Speaker Repair", count: 12, revenue: 24000 },
+        { type: "Camera Repair", count: 8, revenue: 32000 },
+      ],
+      customer_satisfaction: 4.8,
+      repeat_customers: 68,
+      average_repair_time: 2.3, // days
+    };
+  }
+
+  // Helper function to check if date is within 24 hours
+  static isWithin24Hours(dateString: string): boolean {
+    const date = new Date(dateString);
+    const now = new Date();
+    const hoursDiff = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    return hoursDiff <= 24;
+  }
+
+  // Get role-specific demo experience descriptions
+  static getRoleExperienceInfo(role: "admin" | "owner" | "worker") {
+    const roleInfo = {
+      admin: {
+        title: "Admin Experience",
+        description: "Complete development and system access",
+        capabilities: [
+          "Full system configuration",
+          "User management and roles",
+          "Development tools access",
+          "All business operations",
+          "Complete historical data",
+          "System settings and security",
+        ],
+        restrictions: [],
+        color: "red",
+      },
+      owner: {
+        title: "Owner Experience",
+        description: "Complete business operational control",
+        capabilities: [
+          "All business operations",
+          "Financial reports and analytics",
+          "Staff management",
+          "Supplier and bill management",
+          "Complete historical data",
+          "Business settings control",
+        ],
+        restrictions: ["No development/system configuration"],
+        color: "blue",
+      },
+      worker: {
+        title: "Worker Experience",
+        description: "Limited operational access with time-based restrictions",
+        capabilities: [
+          "Daily transaction management",
+          "Customer service operations",
+          "Basic supplier interactions",
+          "Personal settings only",
+        ],
+        restrictions: [
+          "24-hour access limit on transactions",
+          "24-hour deletion rights only",
+          "No financial reports access",
+          "No bill/expenditure management",
+          "Limited historical data access",
+          "Cannot see business analytics",
+        ],
+        color: "green",
+      },
+    };
+
+    return roleInfo[role];
+  }
 }
 
 export default DemoDataService;
