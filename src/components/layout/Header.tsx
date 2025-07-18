@@ -102,7 +102,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-muted-foreground" />
             <Input
               id="search-field"
-              className="border-0 bg-transparent pl-10 pr-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground"
+              className="border-0 bg-muted/50 hover:bg-muted/80 pl-10 pr-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 focus-visible:bg-muted text-sm placeholder:text-muted-foreground transition-colors"
               placeholder={`${t("search")}...`}
               type="search"
               value={searchQuery}
