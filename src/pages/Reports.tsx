@@ -1,11 +1,5 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,631 +10,597 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  FileText,
-  Download,
+  ResponsiveContainer,
+  LineChart,
+  Line,
   BarChart,
-  TrendingUp,
-  Calendar,
-  PieChart,
-  Eye,
-  EyeOff,
-  Users,
-  Smartphone,
-  DollarSign,
-  Target,
-  ArrowUpRight,
-  ArrowDownRight,
-  Filter,
-} from "lucide-react";
-import { useState } from "react";
-import {
-  BarChart as RechartsBarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart as RechartsPieChart,
-  Cell,
+  PieChart,
   Pie,
-  AreaChart,
+  Cell,
   Area,
+  AreaChart,
 } from "recharts";
+import {
+  TrendingUp,
+  TrendingDown,
+  Download,
+  Calendar,
+  DollarSign,
+  Users,
+  Wrench,
+  Package,
+  BarChart3,
+  PieChart as PieChartIcon,
+  FileBarChart,
+  Filter,
+} from "lucide-react";
+import { useRole } from "@/hooks/use-role";
 
-// Mock data for reports
-const monthlyRevenueData = [
-  { month: "Jul", revenue: 78000, expenses: 45000, profit: 33000, repairs: 89 },
-  { month: "Aug", revenue: 82000, expenses: 48000, profit: 34000, repairs: 95 },
-  {
-    month: "Sep",
-    revenue: 85000,
-    expenses: 50000,
-    profit: 35000,
-    repairs: 102,
-  },
-  {
-    month: "Oct",
-    revenue: 88000,
-    expenses: 52000,
-    profit: 36000,
-    repairs: 108,
-  },
-  {
-    month: "Nov",
-    revenue: 92000,
-    expenses: 55000,
-    profit: 37000,
-    repairs: 115,
-  },
-  {
-    month: "Dec",
-    revenue: 95000,
-    expenses: 58000,
-    profit: 37000,
-    repairs: 122,
-  },
-  {
-    month: "Jan",
-    revenue: 98000,
-    expenses: 60000,
-    profit: 38000,
-    repairs: 128,
-  },
-];
+interface MonthlyRevenueData {
+  month: string;
+  revenue: number;
+  expenses: number;
+  profit: number;
+  repairs: number;
+}
 
-const repairTypeData = [
-  {
-    name: "Screen Repair",
-    value: 35,
-    count: 45,
-    revenue: 67500,
-    color: "#3B82F6",
-  },
-  {
-    name: "Battery Replacement",
-    value: 25,
-    count: 32,
-    revenue: 32000,
-    color: "#10B981",
-  },
-  {
-    name: "Software Issues",
-    value: 20,
-    count: 26,
-    revenue: 26000,
-    color: "#F59E0B",
-  },
-  {
-    name: "Charging Port",
-    value: 12,
-    count: 15,
-    revenue: 22500,
-    color: "#EF4444",
-  },
-  {
-    name: "Water Damage",
-    value: 8,
-    count: 10,
-    revenue: 25000,
-    color: "#8B5CF6",
-  },
-];
+interface RepairTypeData {
+  type: string;
+  count: number;
+  revenue: number;
+  avgTicket: number;
+  color: string;
+}
 
-const customerAnalyticsData = [
-  { segment: "New Customers", count: 45, percentage: 35, revenue: 45000 },
-  { segment: "Returning Customers", count: 68, percentage: 53, revenue: 85000 },
-  { segment: "Frequent Customers", count: 15, percentage: 12, revenue: 32000 },
-];
+interface CustomerAnalytics {
+  segment: string;
+  count: number;
+  percentage: number;
+  revenue: number;
+}
 
-const deviceBrandData = [
-  { brand: "Samsung", repairs: 48, revenue: 72000, avgTicket: 1500 },
-  { brand: "iPhone", repairs: 35, revenue: 87500, avgTicket: 2500 },
-  { brand: "OnePlus", repairs: 22, revenue: 33000, avgTicket: 1500 },
-  { brand: "Xiaomi", repairs: 18, revenue: 18000, avgTicket: 1000 },
-  { brand: "Others", repairs: 5, revenue: 7500, avgTicket: 1500 },
-];
+interface DeviceBrandData {
+  brand: string;
+  repairs: number;
+  revenue: number;
+  avgTicket: number;
+}
 
-const topCustomersData = [
-  { name: "Rajesh Kumar", repairs: 8, revenue: 12000, lastVisit: "2024-01-15" },
-  { name: "Priya Sharma", repairs: 6, revenue: 15000, lastVisit: "2024-01-14" },
-  { name: "Amit Patel", repairs: 5, revenue: 8500, lastVisit: "2024-01-12" },
-  { name: "Sneha Reddy", repairs: 4, revenue: 10000, lastVisit: "2024-01-10" },
-  { name: "Vikram Singh", repairs: 4, revenue: 7500, lastVisit: "2024-01-08" },
-];
+interface TopCustomer {
+  name: string;
+  repairs: number;
+  revenue: number;
+  lastVisit: string;
+}
 
-const supplierSpendingData = [
-  {
-    supplier: "TechParts Solutions",
-    spending: 85000,
-    orders: 12,
-    avgOrder: 7083,
-  },
-  {
-    supplier: "Mobile Components Ltd",
-    spending: 62000,
-    orders: 8,
-    avgOrder: 7750,
-  },
-  { supplier: "Screen Masters", spending: 45000, orders: 6, avgOrder: 7500 },
-  {
-    supplier: "Battery Pro Solutions",
-    spending: 32000,
-    orders: 5,
-    avgOrder: 6400,
-  },
-];
+interface SupplierSpending {
+  supplier: string;
+  amount: number;
+  transactions: number;
+  avgOrder: number;
+}
 
 export default function Reports() {
-  const { t } = useLanguage();
-  const [showProfits, setShowProfits] = useState(
-    localStorage.getItem("showProfits") === "true",
-  );
-  const [timeRange, setTimeRange] = useState("last6months");
-  const [reportType, setReportType] = useState("overview");
+  const { role } = useRole();
+  const [dateFilter, setDateFilter] = useState("last-6-months");
+  const [reportType, setReportType] = useState("revenue");
 
-  const toggleProfits = () => {
-    const newValue = !showProfits;
-    setShowProfits(newValue);
-    localStorage.setItem("showProfits", newValue.toString());
+  // Initialize empty data states
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState<
+    MonthlyRevenueData[]
+  >([]);
+  const [repairTypeData, setRepairTypeData] = useState<RepairTypeData[]>([]);
+  const [customerAnalyticsData, setCustomerAnalyticsData] = useState<
+    CustomerAnalytics[]
+  >([]);
+  const [deviceBrandData, setDeviceBrandData] = useState<DeviceBrandData[]>([]);
+  const [topCustomersData, setTopCustomersData] = useState<TopCustomer[]>([]);
+  const [supplierSpendingData, setSupplierSpendingData] = useState<
+    SupplierSpending[]
+  >([]);
+
+  // Calculate totals from data
+  const totals = {
+    totalRevenue: monthlyRevenueData.reduce(
+      (sum, month) => sum + month.revenue,
+      0,
+    ),
+    totalExpenses: monthlyRevenueData.reduce(
+      (sum, month) => sum + month.expenses,
+      0,
+    ),
+    totalProfit: monthlyRevenueData.reduce(
+      (sum, month) => sum + month.profit,
+      0,
+    ),
+    totalRepairs: monthlyRevenueData.reduce(
+      (sum, month) => sum + month.repairs,
+      0,
+    ),
   };
 
-  // Calculate key metrics
-  const currentMonth = monthlyRevenueData[monthlyRevenueData.length - 1];
-  const previousMonth = monthlyRevenueData[monthlyRevenueData.length - 2];
+  const currentMonth =
+    monthlyRevenueData.length > 0
+      ? monthlyRevenueData[monthlyRevenueData.length - 1]
+      : null;
+  const previousMonth =
+    monthlyRevenueData.length > 1
+      ? monthlyRevenueData[monthlyRevenueData.length - 2]
+      : null;
 
-  const revenueGrowth = (
-    ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) *
-    100
-  ).toFixed(1);
-  const profitGrowth = showProfits
-    ? (
-        ((currentMonth.profit - previousMonth.profit) / previousMonth.profit) *
-        100
-      ).toFixed(1)
-    : "0";
-  const repairGrowth = (
-    ((currentMonth.repairs - previousMonth.repairs) / previousMonth.repairs) *
-    100
-  ).toFixed(1);
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
 
-  const totalRevenue = monthlyRevenueData.reduce(
-    (sum, month) => sum + month.revenue,
-    0,
-  );
-  const totalProfit = monthlyRevenueData.reduce(
-    (sum, month) => sum + month.profit,
-    0,
-  );
-  const totalRepairs = monthlyRevenueData.reduce(
-    (sum, month) => sum + month.repairs,
-    0,
-  );
-  const avgTicketSize = Math.round(totalRevenue / totalRepairs);
+  const revenueGrowth =
+    currentMonth && previousMonth
+      ? calculateGrowth(currentMonth.revenue, previousMonth.revenue)
+      : 0;
+  const profitGrowth =
+    currentMonth && previousMonth
+      ? calculateGrowth(currentMonth.profit, previousMonth.profit)
+      : 0;
+  const repairGrowth =
+    currentMonth && previousMonth
+      ? calculateGrowth(currentMonth.repairs, previousMonth.repairs)
+      : 0;
+
+  // Only show reports for admin role
+  if (role === "worker") {
+    return (
+      <div className="space-y-8 p-8">
+        <div className="text-center py-12">
+          <FileBarChart className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
+          <p className="text-muted-foreground">
+            Business reports are only available to administrators.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {t("reports")}
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Business analytics and financial reports
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Calendar className="mr-2 h-4 w-4" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last30days">Last 30 Days</SelectItem>
-                <SelectItem value="last3months">Last 3 Months</SelectItem>
-                <SelectItem value="last6months">Last 6 Months</SelectItem>
-                <SelectItem value="lastyear">Last Year</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleProfits}
-              className="h-10 sm:h-9"
-            >
-              {showProfits ? (
-                <EyeOff className="mr-2 h-4 w-4" />
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Reports & Analytics
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Comprehensive business insights and performance analytics
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-[180px]">
+              <Calendar className="mr-2 h-4 w-4" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="last-7-days">Last 7 Days</SelectItem>
+              <SelectItem value="last-30-days">Last 30 Days</SelectItem>
+              <SelectItem value="last-3-months">Last 3 Months</SelectItem>
+              <SelectItem value="last-6-months">Last 6 Months</SelectItem>
+              <SelectItem value="last-year">Last Year</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{totals.totalRevenue.toLocaleString()}
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {revenueGrowth > 0 ? (
+                <TrendingUp className="mr-1 h-3 w-3 text-green-600" />
               ) : (
-                <Eye className="mr-2 h-4 w-4" />
+                <TrendingDown className="mr-1 h-3 w-3 text-red-600" />
               )}
-              {showProfits ? "Hide Profits" : "Show Profits"}
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              {t("export")}
-            </Button>
-          </div>
-        </div>
+              <span
+                className={
+                  revenueGrowth > 0 ? "text-green-600" : "text-red-600"
+                }
+              >
+                {Math.abs(revenueGrowth).toFixed(1)}%
+              </span>
+              <span className="ml-1">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Key Performance Indicators */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                Total Revenue
-                <DollarSign className="h-4 w-4" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{totalRevenue.toLocaleString()}
-              </div>
-              <div className="flex items-center text-xs mt-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-                <span className="text-green-600">+{revenueGrowth}%</span>
-                <span className="text-muted-foreground ml-1">
-                  vs last month
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                {showProfits ? "Total Profit" : "Total Repairs"}
-                {showProfits ? (
-                  <TrendingUp className="h-4 w-4" />
-                ) : (
-                  <Smartphone className="h-4 w-4" />
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {showProfits
-                  ? `₹${totalProfit.toLocaleString()}`
-                  : totalRepairs.toLocaleString()}
-              </div>
-              <div className="flex items-center text-xs mt-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-                <span className="text-green-600">
-                  +{showProfits ? profitGrowth : repairGrowth}%
-                </span>
-                <span className="text-muted-foreground ml-1">
-                  vs last month
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                Avg. Ticket Size
-                <Target className="h-4 w-4" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{avgTicketSize.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Per repair</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                Customer Base
-                <Users className="h-4 w-4" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">2,847</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Total customers
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{totals.totalProfit.toLocaleString()}
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {profitGrowth > 0 ? (
+                <TrendingUp className="mr-1 h-3 w-3 text-green-600" />
+              ) : (
+                <TrendingDown className="mr-1 h-3 w-3 text-red-600" />
+              )}
+              <span
+                className={profitGrowth > 0 ? "text-green-600" : "text-red-600"}
+              >
+                {Math.abs(profitGrowth).toFixed(1)}%
+              </span>
+              <span className="ml-1">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue & Profit Trend</CardTitle>
-              <CardDescription>Monthly performance over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Repairs</CardTitle>
+            <Wrench className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totals.totalRepairs}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {repairGrowth > 0 ? (
+                <TrendingUp className="mr-1 h-3 w-3 text-green-600" />
+              ) : (
+                <TrendingDown className="mr-1 h-3 w-3 text-red-600" />
+              )}
+              <span
+                className={repairGrowth > 0 ? "text-green-600" : "text-red-600"}
+              >
+                {Math.abs(repairGrowth).toFixed(1)}%
+              </span>
+              <span className="ml-1">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Avg Ticket Size
+            </CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹
+              {totals.totalRepairs > 0
+                ? Math.round(
+                    totals.totalRevenue / totals.totalRepairs,
+                  ).toLocaleString()
+                : 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Per repair job</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Revenue Trend */}
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Revenue & Profit Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {monthlyRevenueData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={350}>
                 <AreaChart data={monthlyRevenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip
-                    formatter={(value) => `₹${value.toLocaleString()}`}
-                    labelFormatter={(label) => `Month: ${label}`}
+                    formatter={(value: number, name: string) => [
+                      `₹${value.toLocaleString()}`,
+                      name === "revenue"
+                        ? "Revenue"
+                        : name === "expenses"
+                          ? "Expenses"
+                          : "Profit",
+                    ]}
                   />
-                  <Legend />
                   <Area
                     type="monotone"
                     dataKey="revenue"
                     stackId="1"
-                    stroke="#3B82F6"
-                    fill="#3B82F6"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
                     fillOpacity={0.6}
-                    name="Revenue"
                   />
-                  {showProfits && (
-                    <Area
-                      type="monotone"
-                      dataKey="profit"
-                      stackId="2"
-                      stroke="#10B981"
-                      fill="#10B981"
-                      fillOpacity={0.6}
-                      name="Profit"
-                    />
-                  )}
+                  <Area
+                    type="monotone"
+                    dataKey="profit"
+                    stackId="2"
+                    stroke="#10b981"
+                    fill="#10b981"
+                    fillOpacity={0.6}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expenses"
+                    stackId="3"
+                    stroke="#ef4444"
+                    fill="#ef4444"
+                    fillOpacity={0.6}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="flex items-center justify-center h-[350px] text-muted-foreground">
+                <div className="text-center">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No revenue data available</p>
+                  <p className="text-sm">
+                    Complete some transactions to see revenue trends
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Repair Types */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Repair Types Distribution</CardTitle>
-              <CardDescription>Breakdown by repair category</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                    data={repairTypeData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}%`}
-                  >
-                    {repairTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        {/* Repair Types Distribution */}
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Repair Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {repairTypeData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={repairTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="count"
+                    >
+                      {repairTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string, props: any) => [
+                        `${value} repairs`,
+                        props.payload.type,
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-4 space-y-2">
+                  {repairTypeData.slice(0, 4).map((item) => (
+                    <div
+                      key={item.type}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center">
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span>{item.type}</span>
+                      </div>
+                      <span className="font-medium">{item.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[350px] text-muted-foreground">
+                <div className="text-center">
+                  <PieChartIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No repair data available</p>
+                  <p className="text-sm">
+                    Start adding repairs to see the breakdown
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Device Brands */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Device Brand Performance</CardTitle>
-              <CardDescription>
-                Revenue and repair count by brand
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsBarChart data={deviceBrandData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="brand" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      name === "revenue" ? `₹${value.toLocaleString()}` : value,
-                      name === "revenue" ? "Revenue" : "Repairs",
-                    ]}
-                  />
-                  <Legend />
-                  <Bar dataKey="repairs" fill="#3B82F6" name="Repairs" />
-                  {showProfits && (
-                    <Bar dataKey="revenue" fill="#10B981" name="Revenue" />
-                  )}
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Customer Analytics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Segments</CardTitle>
-              <CardDescription>
-                Customer breakdown by visit frequency
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Top Customers */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Customers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {topCustomersData.length > 0 ? (
               <div className="space-y-4">
-                {customerAnalyticsData.map((segment) => (
+                {topCustomersData.map((customer, index) => (
                   <div
-                    key={segment.segment}
+                    key={customer.name}
                     className="flex items-center justify-between"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-primary"></div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                        {index + 1}
+                      </div>
                       <div>
-                        <div className="font-medium">{segment.segment}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {segment.count} customers ({segment.percentage}%)
-                        </div>
+                        <p className="font-medium">{customer.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {customer.repairs} repairs • Last visit:{" "}
+                          {customer.lastVisit}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">
-                        {showProfits
-                          ? `₹${segment.revenue.toLocaleString()}`
-                          : `${segment.count} customers`}
-                      </div>
+                      <p className="font-medium">
+                        ₹{customer.revenue.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Data Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top Customers */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Customers</CardTitle>
-              <CardDescription>
-                Customers with highest repair count and revenue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Repairs</TableHead>
-                      <TableHead>Revenue</TableHead>
-                      <TableHead>Last Visit</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {topCustomersData.map((customer, index) => (
-                      <TableRow key={customer.name}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{index + 1}</Badge>
-                            {customer.name}
-                          </div>
-                        </TableCell>
-                        <TableCell>{customer.repairs}</TableCell>
-                        <TableCell>
-                          {showProfits
-                            ? `₹${customer.revenue.toLocaleString()}`
-                            : "-"}
-                        </TableCell>
-                        <TableCell>{customer.lastVisit}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No customer data available</p>
+                  <p className="text-sm">
+                    Complete transactions to see top customers
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Supplier Spending */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Supplier Spending Analysis</CardTitle>
-              <CardDescription>Spending breakdown by supplier</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead>Orders</TableHead>
-                      <TableHead>Total Spent</TableHead>
-                      <TableHead>Avg Order</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {supplierSpendingData.map((supplier, index) => (
-                      <TableRow key={supplier.supplier}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{index + 1}</Badge>
-                            {supplier.supplier}
-                          </div>
-                        </TableCell>
-                        <TableCell>{supplier.orders}</TableCell>
-                        <TableCell>
-                          ₹{supplier.spending.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          ₹{supplier.avgOrder.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Report Summary */}
+        {/* Device Brands */}
         <Card>
           <CardHeader>
-            <CardTitle>Report Summary</CardTitle>
-            <CardDescription>
-              Key insights and business intelligence
-            </CardDescription>
+            <CardTitle>Device Brands</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                  Revenue Growth
-                </div>
-                <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                  +{revenueGrowth}% MoM
-                </div>
-                <div className="text-xs text-blue-600 dark:text-blue-400">
-                  Consistent upward trend
+            {deviceBrandData.length > 0 ? (
+              <div className="space-y-4">
+                {deviceBrandData.map((brand) => (
+                  <div
+                    key={brand.brand}
+                    className="flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="font-medium">{brand.brand}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {brand.repairs} repairs • Avg: ₹
+                        {brand.avgTicket.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ₹{brand.revenue.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No device data available</p>
+                  <p className="text-sm">
+                    Complete repairs to see device brand analytics
+                  </p>
                 </div>
               </div>
-              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <div className="text-sm font-medium text-green-700 dark:text-green-300">
-                  Top Repair Type
-                </div>
-                <div className="text-lg font-bold text-green-900 dark:text-green-100">
-                  Screen Repair (35%)
-                </div>
-                <div className="text-xs text-green-600 dark:text-green-400">
-                  45 repairs this month
-                </div>
-              </div>
-              <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                <div className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                  Top Device Brand
-                </div>
-                <div className="text-lg font-bold text-orange-900 dark:text-orange-100">
-                  Samsung (38%)
-                </div>
-                <div className="text-xs text-orange-600 dark:text-orange-400">
-                  48 repairs this month
-                </div>
-              </div>
-              <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                <div className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                  Customer Retention
-                </div>
-                <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
-                  65% Returning
-                </div>
-                <div className="text-xs text-purple-600 dark:text-purple-400">
-                  83 repeat customers
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+
+      {/* Customer Analytics & Supplier Spending */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Analytics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {customerAnalyticsData.length > 0 ? (
+              <div className="space-y-4">
+                {customerAnalyticsData.map((segment) => (
+                  <div key={segment.segment} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {segment.segment}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {segment.count} customers
+                      </span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full"
+                        style={{ width: `${segment.percentage}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{segment.percentage}% of total</span>
+                      <span>₹{segment.revenue.toLocaleString()} revenue</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No customer analytics available</p>
+                  <p className="text-sm">
+                    Build customer base to see analytics
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Supplier Spending</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {supplierSpendingData.length > 0 ? (
+              <div className="space-y-4">
+                {supplierSpendingData.map((supplier) => (
+                  <div
+                    key={supplier.supplier}
+                    className="flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="font-medium">{supplier.supplier}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {supplier.transactions} orders • Avg: ₹
+                        {supplier.avgOrder.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ₹{supplier.amount.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No supplier spending data</p>
+                  <p className="text-sm">
+                    Add expenditures to see supplier analytics
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

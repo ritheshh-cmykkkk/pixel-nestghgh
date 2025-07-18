@@ -1,24 +1,10 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +13,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -38,187 +35,161 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Receipt,
   Plus,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
   Download,
   Send,
   MessageSquare,
-  Printer,
-  Eye,
-  Edit,
-  Copy,
-  Search,
-  Calendar,
-  DollarSign,
-  FileText,
-  Phone,
   Mail,
+  Phone,
+  Calendar,
+  Receipt,
+  FileText,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Mock data
-const mockCustomers = [
-  {
-    id: 1,
-    name: "Rajesh Kumar",
-    phone: "+91 98765 43210",
-    email: "rajesh@email.com",
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    phone: "+91 98765 43211",
-    email: "priya@email.com",
-  },
-  {
-    id: 3,
-    name: "Mohammed Ali",
-    phone: "+91 98765 43212",
-    email: "mohammed@email.com",
-  },
-];
+interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+}
 
-const mockBills = [
-  {
-    id: "INV-001",
-    customerName: "Rajesh Kumar",
-    customerPhone: "+91 98765 43210",
-    date: "2024-01-15",
-    amount: 12500,
-    status: "paid",
-    items: [
-      {
-        description: "iPhone 14 Pro Screen Replacement",
-        quantity: 1,
-        rate: 12000,
-        amount: 12000,
-      },
-      { description: "Service Charge", quantity: 1, rate: 500, amount: 500 },
-    ],
-    tax: 1250,
-    total: 12500,
-  },
-  {
-    id: "INV-002",
-    customerName: "Priya Sharma",
-    customerPhone: "+91 98765 43211",
-    date: "2024-01-14",
-    amount: 3500,
-    status: "sent",
-    items: [
-      {
-        description: "Samsung S23 Battery Replacement",
-        quantity: 1,
-        rate: 3000,
-        amount: 3000,
-      },
-      { description: "Service Charge", quantity: 1, rate: 500, amount: 500 },
-    ],
-    tax: 350,
-    total: 3500,
-  },
-  {
-    id: "INV-003",
-    customerName: "Mohammed Ali",
-    customerPhone: "+91 98765 43212",
-    date: "2024-01-13",
-    amount: 4500,
-    status: "draft",
-    items: [
-      {
-        description: "OnePlus 11 Charging Port Repair",
-        quantity: 1,
-        rate: 4000,
-        amount: 4000,
-      },
-      { description: "Service Charge", quantity: 1, rate: 500, amount: 500 },
-    ],
-    tax: 450,
-    total: 4500,
-  },
-];
+interface BillItem {
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
 
-const statusConfig = {
-  draft: { label: "Draft", color: "bg-muted text-muted-foreground" },
-  sent: { label: "Sent", color: "bg-blue-500 text-white" },
-  paid: { label: "Paid", color: "bg-green-500 text-white" },
-  overdue: { label: "Overdue", color: "bg-red-500 text-white" },
-};
+interface Bill {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  date: string;
+  amount: number;
+  status: "paid" | "pending" | "overdue";
+  items: BillItem[];
+  notes?: string;
+  dueDate?: string;
+}
 
 export default function Bills() {
-  const [bills, setBills] = useState(mockBills);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [previewBill, setPreviewBill] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const [formData, setFormData] = useState({
-    customerId: "",
+  const [newBill, setNewBill] = useState({
     customerName: "",
     customerPhone: "",
     customerEmail: "",
-    customerAddress: "",
-    date: new Date().toISOString().split("T")[0],
     items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
-    taxRate: 10,
-    discount: 0,
     notes: "",
   });
 
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
+
   const filteredBills = bills.filter((bill) => {
     const matchesSearch =
-      bill.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.id.toLowerCase().includes(searchQuery.toLowerCase());
+      bill.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bill.customerPhone.includes(searchTerm) ||
+      bill.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || bill.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const addLineItem = () => {
-    setFormData({
-      ...formData,
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      paid: {
+        label: "Paid",
+        className:
+          "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+        icon: CheckCircle,
+      },
+      pending: {
+        label: "Pending",
+        className:
+          "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+        icon: Clock,
+      },
+      overdue: {
+        label: "Overdue",
+        className:
+          "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+        icon: AlertTriangle,
+      },
+    };
+    return (
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+    );
+  };
+
+  const calculateItemAmount = (quantity: number, rate: number) => {
+    return quantity * rate;
+  };
+
+  const calculateTotalAmount = () => {
+    return newBill.items.reduce(
+      (total, item) => total + calculateItemAmount(item.quantity, item.rate),
+      0,
+    );
+  };
+
+  const handleItemChange = (
+    index: number,
+    field: keyof BillItem,
+    value: string | number,
+  ) => {
+    const updatedItems = [...newBill.items];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+
+    // Auto-calculate amount when quantity or rate changes
+    if (field === "quantity" || field === "rate") {
+      updatedItems[index].amount = calculateItemAmount(
+        updatedItems[index].quantity,
+        updatedItems[index].rate,
+      );
+    }
+
+    setNewBill({ ...newBill, items: updatedItems });
+  };
+
+  const addNewItem = () => {
+    setNewBill({
+      ...newBill,
       items: [
-        ...formData.items,
+        ...newBill.items,
         { description: "", quantity: 1, rate: 0, amount: 0 },
       ],
     });
   };
 
-  const removeLineItem = (index: number) => {
-    const newItems = formData.items.filter((_, i) => i !== index);
-    setFormData({ ...formData, items: newItems });
+  const removeItem = (index: number) => {
+    if (newBill.items.length > 1) {
+      const updatedItems = newBill.items.filter((_, i) => i !== index);
+      setNewBill({ ...newBill, items: updatedItems });
+    }
   };
-
-  const updateLineItem = (index: number, field: string, value: any) => {
-    const newItems = formData.items.map((item, i) => {
-      if (i === index) {
-        const updatedItem = { ...item, [field]: value };
-        if (field === "quantity" || field === "rate") {
-          updatedItem.amount = updatedItem.quantity * updatedItem.rate;
-        }
-        return updatedItem;
-      }
-      return item;
-    });
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.amount, 0);
-    const taxAmount = (subtotal * formData.taxRate) / 100;
-    const total = subtotal + taxAmount - formData.discount;
-    return { subtotal, taxAmount, total };
-  };
-
-  const { subtotal, taxAmount, total } = calculateTotals();
 
   const handleCustomerSelect = (customerId: string) => {
-    const customer = mockCustomers.find((c) => c.id.toString() === customerId);
+    const customer = customers.find((c) => c.id.toString() === customerId);
     if (customer) {
-      setFormData({
-        ...formData,
-        customerId,
+      setSelectedCustomer(customer);
+      setNewBill({
+        ...newBill,
         customerName: customer.name,
         customerPhone: customer.phone,
         customerEmail: customer.email,
@@ -226,769 +197,512 @@ export default function Bills() {
     }
   };
 
-  const handlePreview = (bill: any) => {
-    setPreviewBill(bill);
-    setShowPreviewDialog(true);
-  };
+  const handleCreateBill = () => {
+    if (
+      !newBill.customerName ||
+      !newBill.customerPhone ||
+      newBill.items.length === 0
+    ) {
+      return;
+    }
 
-  const handleDownloadPDF = (bill: any) => {
-    // Mock PDF download
-    console.log("Downloading PDF for bill:", bill.id);
-  };
-
-  const handleSendSMS = (bill: any) => {
-    // Mock SMS sending
-    console.log("Sending SMS for bill:", bill.id);
-  };
-
-  const handleSendEmail = (bill: any) => {
-    // Mock email sending
-    console.log("Sending email for bill:", bill.id);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newBill = {
-      id: `INV-${String(bills.length + 1).padStart(3, "0")}`,
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      date: formData.date,
-      amount: total,
-      status: "draft",
-      items: formData.items.filter(
-        (item) => item.description && item.amount > 0,
-      ),
-      tax: taxAmount,
-      total: total,
+    const bill: Bill = {
+      id: `INV-${(bills.length + 1).toString().padStart(3, "0")}`,
+      customerName: newBill.customerName,
+      customerPhone: newBill.customerPhone,
+      customerEmail: newBill.customerEmail,
+      date: new Date().toISOString().split("T")[0],
+      amount: calculateTotalAmount(),
+      status: "pending",
+      items: newBill.items.filter((item) => item.description.trim() !== ""),
+      notes: newBill.notes,
     };
 
-    setBills([newBill, ...bills]);
-    setShowCreateDialog(false);
-
-    // Reset form
-    setFormData({
-      customerId: "",
+    setBills([bill, ...bills]);
+    setNewBill({
       customerName: "",
       customerPhone: "",
       customerEmail: "",
-      customerAddress: "",
-      date: new Date().toISOString().split("T")[0],
       items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
-      taxRate: 10,
-      discount: 0,
       notes: "",
     });
+    setSelectedCustomer(null);
+    setShowCreateDialog(false);
+  };
+
+  const handleDownloadPDF = (bill: Bill) => {
+    console.log("Downloading PDF for bill:", bill.id);
+    // PDF download implementation would go here
+  };
+
+  const handleSendSMS = (bill: Bill) => {
+    console.log("Sending SMS for bill:", bill.id);
+    // SMS implementation would go here
+  };
+
+  const handleSendEmail = (bill: Bill) => {
+    console.log("Sending email for bill:", bill.id);
+    // Email implementation would go here
+  };
+
+  const handleDeleteBill = (billId: string) => {
+    setBills(bills.filter((b) => b.id !== billId));
+  };
+
+  const stats = {
+    totalBills: bills.length,
+    paidBills: bills.filter((b) => b.status === "paid").length,
+    pendingAmount: bills
+      .filter((b) => b.status !== "paid")
+      .reduce((sum, b) => sum + b.amount, 0),
+    totalRevenue: bills
+      .filter((b) => b.status === "paid")
+      .reduce((sum, b) => sum + b.amount, 0),
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              E-Bill Generator
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Create and manage customer bills and invoices
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export All
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Bills & Invoices
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Create, manage, and track customer bills and invoices
+          </p>
+        </div>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Bill
             </Button>
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Bill
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Create New Bill</DialogTitle>
-                  <DialogDescription>
-                    Generate a professional invoice for repair services
-                  </DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <Tabs defaultValue="customer" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="customer">Customer</TabsTrigger>
-                      <TabsTrigger value="items">Items</TabsTrigger>
-                      <TabsTrigger value="preview">Preview</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="customer" className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Select Customer</Label>
-                          <Select onValueChange={handleCustomerSelect}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose existing customer" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {mockCustomers.map((customer) => (
-                                <SelectItem
-                                  key={customer.id}
-                                  value={customer.id.toString()}
-                                >
-                                  {customer.name} - {customer.phone}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="date">Bill Date</Label>
-                          <Input
-                            id="date"
-                            type="date"
-                            value={formData.date}
-                            onChange={(e) =>
-                              setFormData({ ...formData, date: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="customerName">Customer Name *</Label>
-                          <Input
-                            id="customerName"
-                            value={formData.customerName}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                customerName: e.target.value,
-                              })
-                            }
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="customerPhone">Phone Number</Label>
-                          <Input
-                            id="customerPhone"
-                            value={formData.customerPhone}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                customerPhone: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="customerEmail">Email Address</Label>
-                        <Input
-                          id="customerEmail"
-                          type="email"
-                          value={formData.customerEmail}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              customerEmail: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="customerAddress">Address</Label>
-                        <Textarea
-                          id="customerAddress"
-                          value={formData.customerAddress}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              customerAddress: e.target.value,
-                            })
-                          }
-                          rows={3}
-                        />
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="items" className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold">Bill Items</h3>
-                        <Button type="button" onClick={addLineItem} size="sm">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Item
-                        </Button>
-                      </div>
-
-                      <div className="space-y-4">
-                        {formData.items.map((item, index) => (
-                          <Card key={index} className="p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                              <div className="md:col-span-2">
-                                <Label>Description</Label>
-                                <Input
-                                  placeholder="iPhone 14 Pro Screen Replacement"
-                                  value={item.description}
-                                  onChange={(e) =>
-                                    updateLineItem(
-                                      index,
-                                      "description",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <Label>Quantity</Label>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={item.quantity}
-                                  onChange={(e) =>
-                                    updateLineItem(
-                                      index,
-                                      "quantity",
-                                      parseInt(e.target.value) || 1,
-                                    )
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <Label>Rate (₹)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={item.rate}
-                                  onChange={(e) =>
-                                    updateLineItem(
-                                      index,
-                                      "rate",
-                                      parseFloat(e.target.value) || 0,
-                                    )
-                                  }
-                                />
-                              </div>
-                              <div className="flex items-end gap-2">
-                                <div className="flex-1">
-                                  <Label>Amount</Label>
-                                  <div className="h-10 flex items-center px-3 border rounded-md bg-muted">
-                                    ₹{item.amount.toFixed(2)}
-                                  </div>
-                                </div>
-                                {formData.items.length > 1 && (
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => removeLineItem(index)}
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                          <Input
-                            id="taxRate"
-                            type="number"
-                            value={formData.taxRate}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taxRate: parseFloat(e.target.value) || 0,
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="discount">Discount (₹)</Label>
-                          <Input
-                            id="discount"
-                            type="number"
-                            value={formData.discount}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                discount: parseFloat(e.target.value) || 0,
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="notes">Notes</Label>
-                        <Textarea
-                          id="notes"
-                          placeholder="Thank you for your business!"
-                          value={formData.notes}
-                          onChange={(e) =>
-                            setFormData({ ...formData, notes: e.target.value })
-                          }
-                        />
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="preview" className="space-y-4">
-                      <Card className="p-6 bg-white text-black">
-                        <div className="space-y-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h1 className="text-2xl font-bold text-blue-600">
-                                INVOICE
-                              </h1>
-                              <p className="text-gray-600">INV-NEW</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-xl font-bold text-blue-600">
-                                Expenso
-                              </div>
-                              <p className="text-sm text-gray-600">
-                                Mobile Repair Services
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-6">
-                            <div>
-                              <h3 className="font-semibold text-gray-900 mb-2">
-                                Bill To:
-                              </h3>
-                              <div className="text-sm text-gray-600">
-                                <p className="font-medium">
-                                  {formData.customerName}
-                                </p>
-                                {formData.customerPhone && (
-                                  <p>{formData.customerPhone}</p>
-                                )}
-                                {formData.customerEmail && (
-                                  <p>{formData.customerEmail}</p>
-                                )}
-                                {formData.customerAddress && (
-                                  <p>{formData.customerAddress}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-900 mb-2">
-                                Invoice Details:
-                              </h3>
-                              <div className="text-sm text-gray-600">
-                                <p>Date: {formData.date}</p>
-                                <p>Due Date: {formData.date}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <table className="w-full border-collapse">
-                              <thead>
-                                <tr className="border-b border-gray-200">
-                                  <th className="text-left py-2">
-                                    Description
-                                  </th>
-                                  <th className="text-right py-2">Qty</th>
-                                  <th className="text-right py-2">Rate</th>
-                                  <th className="text-right py-2">Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {formData.items
-                                  .filter((item) => item.description)
-                                  .map((item, index) => (
-                                    <tr
-                                      key={index}
-                                      className="border-b border-gray-100"
-                                    >
-                                      <td className="py-2">
-                                        {item.description}
-                                      </td>
-                                      <td className="text-right py-2">
-                                        {item.quantity}
-                                      </td>
-                                      <td className="text-right py-2">
-                                        ₹{item.rate.toFixed(2)}
-                                      </td>
-                                      <td className="text-right py-2">
-                                        ₹{item.amount.toFixed(2)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="flex justify-end">
-                            <div className="w-64">
-                              <div className="flex justify-between py-1">
-                                <span>Subtotal:</span>
-                                <span>₹{subtotal.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between py-1">
-                                <span>Tax ({formData.taxRate}%):</span>
-                                <span>₹{taxAmount.toFixed(2)}</span>
-                              </div>
-                              {formData.discount > 0 && (
-                                <div className="flex justify-between py-1">
-                                  <span>Discount:</span>
-                                  <span>-₹{formData.discount.toFixed(2)}</span>
-                                </div>
-                              )}
-                              <div className="flex justify-between py-2 border-t border-gray-200 font-bold text-lg">
-                                <span>Total:</span>
-                                <span>₹{total.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {formData.notes && (
-                            <div>
-                              <h3 className="font-semibold text-gray-900 mb-2">
-                                Notes:
-                              </h3>
-                              <p className="text-sm text-gray-600">
-                                {formData.notes}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </Card>
-                    </TabsContent>
-                  </Tabs>
-
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowCreateDialog(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit">Create Bill</Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{bills.length}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Amount
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₹
-                {bills
-                  .reduce((sum, bill) => sum + bill.amount, 0)
-                  .toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">Total invoiced</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid Bills</CardTitle>
-              <Receipt className="h-4 w-4 text-success" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-success">
-                {bills.filter((bill) => bill.status === "paid").length}
-              </div>
-              <p className="text-xs text-muted-foreground">Payment received</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Calendar className="h-4 w-4 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-warning">
-                {bills.filter((bill) => bill.status === "sent").length}
-              </div>
-              <p className="text-xs text-muted-foreground">Awaiting payment</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search bills by customer or invoice number..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="sent">Sent</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bills List */}
-        <div className="grid gap-4">
-          {filteredBills.map((bill) => (
-            <Card key={bill.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Receipt className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-lg">{bill.id}</h3>
-                        <Badge
-                          className={
-                            statusConfig[
-                              bill.status as keyof typeof statusConfig
-                            ].color
-                          }
-                        >
-                          {
-                            statusConfig[
-                              bill.status as keyof typeof statusConfig
-                            ].label
-                          }
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {bill.customerName}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Date: {bill.date}</span>
-                        <span>Items: {bill.items.length}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">
-                        ₹{bill.amount.toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => handlePreview(bill)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => handleDownloadPDF(bill)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      {bill.customerPhone && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => handleSendSMS(bill)}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => handleSendEmail(bill)}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Bill Preview Dialog */}
-        <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Bill Preview</DialogTitle>
+              <DialogTitle>Create New Bill</DialogTitle>
               <DialogDescription>
-                Preview and manage bill actions
+                Generate an invoice for your customer with itemized billing.
               </DialogDescription>
             </DialogHeader>
-
-            {previewBill && (
-              <div className="space-y-6 p-6 bg-white border rounded-lg text-black">
-                {/* Bill content similar to the form preview */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-2xl font-bold text-blue-600">
-                      INVOICE
-                    </h1>
-                    <p className="text-gray-600">{previewBill.id}</p>
+            <div className="grid gap-6 py-4">
+              {/* Customer Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Customer Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerSelect">Select Customer</Label>
+                    <Select onValueChange={handleCustomerSelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose existing customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((customer) => (
+                          <SelectItem
+                            key={customer.id}
+                            value={customer.id.toString()}
+                          >
+                            {customer.name} - {customer.phone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-blue-600">
-                      Expenso
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Mobile Repair Services
-                    </p>
-                  </div>
-                </div>
-
-                {/* Customer and invoice details */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Bill To:
-                    </h3>
-                    <div className="text-sm text-gray-600">
-                      <p className="font-medium">{previewBill.customerName}</p>
-                      <p>{previewBill.customerPhone}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Invoice Details:
-                    </h3>
-                    <div className="text-sm text-gray-600">
-                      <p>Date: {previewBill.date}</p>
-                      <p>
-                        Status:{" "}
-                        {
-                          statusConfig[
-                            previewBill.status as keyof typeof statusConfig
-                          ].label
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Items table */}
-                <div>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-2">Description</th>
-                        <th className="text-right py-2">Qty</th>
-                        <th className="text-right py-2">Rate</th>
-                        <th className="text-right py-2">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {previewBill.items.map((item: any, index: number) => (
-                        <tr key={index} className="border-b border-gray-100">
-                          <td className="py-2">{item.description}</td>
-                          <td className="text-right py-2">{item.quantity}</td>
-                          <td className="text-right py-2">
-                            ₹{item.rate.toFixed(2)}
-                          </td>
-                          <td className="text-right py-2">
-                            ₹{item.amount.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Total */}
-                <div className="flex justify-end">
-                  <div className="w-64">
-                    <div className="flex justify-between py-2 border-t border-gray-200 font-bold text-lg">
-                      <span>Total:</span>
-                      <span>₹{previewBill.total.toFixed(2)}</span>
-                    </div>
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setNewBill({
+                          customerName: "",
+                          customerPhone: "",
+                          customerEmail: "",
+                          items: [
+                            {
+                              description: "",
+                              quantity: 1,
+                              rate: 0,
+                              amount: 0,
+                            },
+                          ],
+                          notes: "",
+                        });
+                        setSelectedCustomer(null);
+                      }}
+                    >
+                      Clear Selection
+                    </Button>
                   </div>
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex gap-2 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleDownloadPDF(previewBill)}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleSendSMS(previewBill)}
-                  >
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Send SMS
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => handleSendEmail(previewBill)}
-                  >
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Email
-                  </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName">Customer Name *</Label>
+                    <Input
+                      id="customerName"
+                      value={newBill.customerName}
+                      onChange={(e) =>
+                        setNewBill({ ...newBill, customerName: e.target.value })
+                      }
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerPhone">Phone Number *</Label>
+                    <Input
+                      id="customerPhone"
+                      value={newBill.customerPhone}
+                      onChange={(e) =>
+                        setNewBill({
+                          ...newBill,
+                          customerPhone: e.target.value,
+                        })
+                      }
+                      placeholder="+91 98765 43210"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="customerEmail">Email Address</Label>
+                  <Input
+                    id="customerEmail"
+                    type="email"
+                    value={newBill.customerEmail}
+                    onChange={(e) =>
+                      setNewBill({ ...newBill, customerEmail: e.target.value })
+                    }
+                    placeholder="customer@email.com"
+                  />
                 </div>
               </div>
-            )}
+
+              {/* Bill Items */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Bill Items</h3>
+                  <Button variant="outline" size="sm" onClick={addNewItem}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Item
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {newBill.items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-12 gap-3 items-end"
+                    >
+                      <div className="col-span-5 space-y-2">
+                        <Label>Description</Label>
+                        <Input
+                          value={item.description}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "description",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Item description"
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <Label>Qty</Label>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "quantity",
+                              Number(e.target.value),
+                            )
+                          }
+                          min="1"
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <Label>Rate (₹)</Label>
+                        <Input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "rate",
+                              Number(e.target.value),
+                            )
+                          }
+                          min="0"
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <Label>Amount (₹)</Label>
+                        <Input
+                          value={item.amount.toLocaleString()}
+                          readOnly
+                          className="bg-muted"
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeItem(index)}
+                          disabled={newBill.items.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <div className="text-right">
+                    <div className="text-lg font-semibold">
+                      Total: ₹{calculateTotalAmount().toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Notes */}
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={newBill.notes}
+                  onChange={(e) =>
+                    setNewBill({ ...newBill, notes: e.target.value })
+                  }
+                  placeholder="Additional notes or terms"
+                  rows={2}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCreateBill}>Create Bill</Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
-    </AppLayout>
+
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalBills}</div>
+            <p className="text-xs text-muted-foreground">Bills generated</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Paid Bills</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.paidBills}
+            </div>
+            <p className="text-xs text-muted-foreground">Successfully paid</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pending Amount
+            </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              ₹{stats.pendingAmount.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">Awaiting payment</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{stats.totalRevenue.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">From paid bills</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Bills</CardTitle>
+            <div className="text-sm text-muted-foreground">
+              {filteredBills.length} of {bills.length} bills
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex items-center justify-between space-x-4">
+            <div className="flex items-center space-x-2 flex-1">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search bills..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {bills.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Bill ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBills.map((bill) => {
+                    const statusConfig = getStatusBadge(bill.status);
+                    const StatusIcon = statusConfig.icon;
+
+                    return (
+                      <TableRow
+                        key={bill.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <TableCell>
+                          <div className="font-mono text-sm">{bill.id}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {bill.customerName}
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Phone className="mr-1 h-3 w-3" />
+                              {bill.customerPhone}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Calendar className="mr-2 h-3 w-3" />
+                            {new Date(bill.date).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            ₹{bill.amount.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={statusConfig.className}>
+                            <StatusIcon className="mr-1 h-3 w-3" />
+                            {statusConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDownloadPDF(bill)}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download PDF
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleSendEmail(bill)}
+                              >
+                                <Mail className="mr-2 h-4 w-4" />
+                                Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleSendSMS(bill)}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Send SMS
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDeleteBill(bill.id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <div className="text-center">
+                <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No bills created yet</p>
+                <p className="text-sm mb-4">
+                  Start by creating your first customer bill or invoice
+                </p>
+                <Button onClick={() => setShowCreateDialog(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Bill
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
