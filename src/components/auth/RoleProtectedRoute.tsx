@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 interface RoleProtectedRouteProps {
   children: ReactNode;
-  allowedRoles: Array<"admin" | "worker">;
+  allowedRoles: Array<"admin" | "owner" | "worker" | "demo">;
   fallbackMessage?: string;
 }
 

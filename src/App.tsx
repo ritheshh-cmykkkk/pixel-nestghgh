@@ -93,31 +93,31 @@ const App = () => (
                     <Route path="suppliers" element={<Suppliers />} />
                     <Route path="suppliers/:id" element={<SupplierDetails />} />
 
-                    {/* Financial routes - Admin only */}
+                    {/* Financial routes - Admin and Owner */}
                     <Route
                       path="expenditures"
                       element={
-                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                        <RoleProtectedRoute allowedRoles={["admin", "owner"]}>
                           <Expenditures />
                         </RoleProtectedRoute>
                       }
                     />
 
-                    {/* Bill routes - Admin only */}
+                    {/* Bill routes - Admin and Owner */}
                     <Route
                       path="bills"
                       element={
-                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                        <RoleProtectedRoute allowedRoles={["admin", "owner"]}>
                           <Bills />
                         </RoleProtectedRoute>
                       }
                     />
 
-                    {/* Report routes - Admin only */}
+                    {/* Report routes - Admin and Owner */}
                     <Route
                       path="reports"
                       element={
-                        <RoleProtectedRoute allowedRoles={["admin"]}>
+                        <RoleProtectedRoute allowedRoles={["admin", "owner"]}>
                           <Reports />
                         </RoleProtectedRoute>
                       }

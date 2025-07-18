@@ -42,7 +42,7 @@ export default function Login() {
     password: "",
     rememberMe: false,
   });
-  const [selectedRole, setSelectedRole] = useState<"admin" | "worker">("admin");
+  const [selectedRole, setSelectedRole] = useState<"demo">("demo");
 
   // Get redirect location from router state
   const from = (location.state as any)?.from?.pathname || "/";
@@ -119,18 +119,18 @@ export default function Login() {
   };
 
   const handleDemoAuthentication = async () => {
-    // Create demo user data based on selected role
+    // Create demo user data for expo purposes only
     const demoUser = {
-      id: `demo-${selectedRole}-1`,
-      email: selectedRole === "admin" ? "admin@demo.com" : "worker@demo.com",
-      name: selectedRole === "admin" ? "Demo Admin" : "Demo Worker",
-      role: selectedRole,
+      id: "demo-user-expo",
+      email: "demo@expo.com",
+      name: "Demo User",
+      role: "demo" as const,
       shop_name: "Demo Repair Shop",
       avatar: null,
     };
 
     const demoAuthData = {
-      token: `demo-token-${selectedRole}-` + Date.now(),
+      token: "demo-token-expo-" + Date.now(),
       user: demoUser,
       expires_in: 86400, // 24 hours
     };
@@ -144,7 +144,7 @@ export default function Login() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Show success message
-    console.log(`Demo login successful as ${selectedRole}!`);
+    console.log("Demo login successful for expo!");
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {

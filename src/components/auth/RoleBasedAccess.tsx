@@ -5,7 +5,7 @@ import { Shield, Clock } from "lucide-react";
 
 interface RoleBasedAccessProps {
   children: ReactNode;
-  requiredRole?: "admin" | "worker";
+  requiredRole?: "admin" | "owner" | "worker" | "demo";
   itemCreatedAt?: string;
   action?: "view" | "delete" | "edit";
   fallback?: ReactNode;
@@ -18,10 +18,26 @@ export function RoleBasedAccess({
   action = "view",
   fallback,
 }: RoleBasedAccessProps) {
-  const { role, canAccess, canDelete, hasFullAccess } = useRole();
+  const { role, canAccess, canDelete, hasFullAccess, hasEditAccess } =
+    useRole();
 
   // Check role requirement
   if (requiredRole && role !== requiredRole && !hasFullAccess) {
+    // Special case for edit access - only admin can edit
+    if (action === "edit" && !hasEditAccess) {
+      return (
+        fallback || (
+          <Alert className="border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+            <Shield className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Development Access Required:</strong> Only admins can
+              edit/develop features.
+            </AlertDescription>
+          </Alert>
+        )
+      );
+    }
+
     return (
       fallback || (
         <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
@@ -29,6 +45,21 @@ export function RoleBasedAccess({
           <AlertDescription>
             <strong>Access Restricted:</strong> This feature requires{" "}
             {requiredRole} privileges.
+          </AlertDescription>
+        </Alert>
+      )
+    );
+  }
+
+  // Demo users can only view demo data
+  if (role === "demo" && action !== "view") {
+    return (
+      fallback || (
+        <Alert className="border-purple-200 bg-purple-50 text-purple-800 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-200">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Demo Mode:</strong> Demo users can only view data for expo
+            purposes.
           </AlertDescription>
         </Alert>
       )

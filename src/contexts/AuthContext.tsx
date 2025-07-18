@@ -51,9 +51,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (token.startsWith("demo-token")) {
             setUser({
               ...storedUser,
-              name: "Demo Admin",
-              email: "admin@demo.com",
-              role: "admin",
+              name: "Demo User",
+              email: "demo@expo.com",
+              role: "demo",
             });
           } else {
             // Invalid demo token, clear and redirect

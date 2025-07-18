@@ -360,7 +360,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {isDemoMode ? "Demo Admin" : user?.name || "Admin"}!
+            Welcome back, {isDemoMode ? "Demo User" : user?.name || "User"}!
           </h1>
           <p className="text-muted-foreground mt-2">
             Here's what's happening with your repair shop today.

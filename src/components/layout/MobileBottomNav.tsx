@@ -16,31 +16,31 @@ const mobileNavigation = [
     href: "/",
     icon: LayoutDashboard,
     exact: true,
-    roles: ["admin", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
   {
     name: "transactions",
     href: "/transactions",
     icon: CreditCard,
-    roles: ["admin", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
   {
     name: "suppliers",
     href: "/suppliers",
     icon: Users,
-    roles: ["admin", "worker"],
+    roles: ["admin", "owner", "worker"],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
-    roles: ["admin"],
+    roles: ["admin", "owner"],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
-    roles: ["admin", "worker"],
+    roles: ["admin", "owner", "worker"],
   },
 ];
 
