@@ -28,19 +28,19 @@ const mobileNavigation = [
     name: "suppliers",
     href: "/suppliers",
     icon: Users,
-    roles: ["admin", "owner", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
-    roles: ["admin", "owner"],
+    roles: ["admin", "owner", "demo"],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
-    roles: ["admin", "owner", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
 ];
 

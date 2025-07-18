@@ -12,23 +12,25 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token and validate demo mode
+// Request interceptor to add auth token and handle demo vs real users
 api.interceptors.request.use(
   (config) => {
     const isDemoMode = localStorage.getItem("demo_mode") === "true";
     const token = localStorage.getItem("auth_token");
 
-    // For demo mode, prevent actual API calls
+    // For demo mode, prevent actual API calls - demo should use mock data only
     if (isDemoMode) {
-      return Promise.reject(new Error("Demo mode - API calls blocked"));
+      return Promise.reject(new Error("Demo mode - Using mock data only"));
     }
 
-    // For real users, validate JWT token before making API calls
+    // For real users (admin, owner, worker), validate JWT token and use real backend
     if (!token || token.startsWith("demo-token")) {
-      return Promise.reject(new Error("Invalid or missing JWT token"));
+      return Promise.reject(
+        new Error("Invalid or missing JWT token for real user"),
+      );
     }
 
-    // Validate JWT token format (basic check)
+    // Validate JWT token format (basic check) for real users
     const tokenParts = token.split(".");
     if (tokenParts.length !== 3) {
       localStorage.removeItem("auth_token");

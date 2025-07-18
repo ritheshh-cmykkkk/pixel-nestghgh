@@ -34,31 +34,31 @@ const navigation = [
     name: "suppliers",
     href: "/suppliers",
     icon: Users,
-    roles: ["admin", "owner", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
   {
     name: "expenditures",
     href: "/expenditures",
     icon: TrendingUp,
-    roles: ["admin", "owner"],
+    roles: ["admin", "owner", "demo"],
   },
   {
     name: "bills",
     href: "/bills",
     icon: Receipt,
-    roles: ["admin", "owner"],
+    roles: ["admin", "owner", "demo"],
   },
   {
     name: "reports",
     href: "/reports",
     icon: FileText,
-    roles: ["admin", "owner"],
+    roles: ["admin", "owner", "demo"],
   },
   {
     name: "settings",
     href: "/settings",
     icon: Settings,
-    roles: ["admin", "owner", "worker"],
+    roles: ["admin", "owner", "worker", "demo"],
   },
 ];
 

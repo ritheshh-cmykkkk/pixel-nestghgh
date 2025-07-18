@@ -51,20 +51,8 @@ export function RoleBasedAccess({
     );
   }
 
-  // Demo users can only view demo data
-  if (role === "demo" && action !== "view") {
-    return (
-      fallback || (
-        <Alert className="border-purple-200 bg-purple-50 text-purple-800 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-200">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Demo Mode:</strong> Demo users can only view data for expo
-            purposes.
-          </AlertDescription>
-        </Alert>
-      )
-    );
-  }
+  // Demo users can access everything with mock data for complete expo experience
+  // No restrictions for demo mode - show everything
 
   // Check time-based access for workers
   if (itemCreatedAt && role === "worker") {

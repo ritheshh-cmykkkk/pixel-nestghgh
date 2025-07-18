@@ -41,9 +41,11 @@ import {
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/use-role";
 import { StatisticsService, DashboardStats } from "@/lib/services/statistics";
 import { TransactionService, Transaction } from "@/lib/services/transactions";
 import { toast } from "@/hooks/use-toast";
+import { DemoRoleSwitcher } from "@/components/demo/DemoRoleSwitcher";
 
 interface ChartData {
   day: string;
@@ -61,7 +63,11 @@ interface RepairTypeData {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { role } = useRole();
   const isDemoMode = localStorage.getItem("demo_mode") === "true";
+  const [demoRole, setDemoRole] = useState<"admin" | "owner" | "worker">(
+    "owner",
+  );
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
     null,
   );
@@ -385,6 +391,11 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Demo Role Switcher */}
+      {isDemoMode && (
+        <DemoRoleSwitcher currentRole={demoRole} onRoleChange={setDemoRole} />
+      )}
 
       {/* Offline Alert */}
       {isOffline && !isDemoMode && (

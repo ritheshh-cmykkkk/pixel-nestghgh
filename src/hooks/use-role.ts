@@ -38,7 +38,7 @@ export function useRole(): UseRoleReturn {
     // Full access roles
     if (role === "admin" || role === "owner") return true;
 
-    // Demo has limited access to demo data only
+    // Demo has full access to all mock data for complete expo experience
     if (role === "demo") return true;
 
     // Worker has 24-hour access limit
@@ -56,8 +56,8 @@ export function useRole(): UseRoleReturn {
     // Full delete access
     if (role === "admin" || role === "owner") return true;
 
-    // Demo cannot delete
-    if (role === "demo") return false;
+    // Demo can simulate delete operations for expo (with mock data)
+    if (role === "demo") return true;
 
     // Worker has 24-hour delete limit
     if (role === "worker") {
