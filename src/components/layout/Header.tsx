@@ -118,7 +118,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             <ConnectionIndicator />
           </div>
 
-<<<<<<< HEAD
           {/* Role indicator - shows Demo for demo users, actual role for real users */}
           {user?.role && (
             <Badge
@@ -134,17 +133,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                   ? "border-slate-400 text-slate-600 bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:bg-slate-900/50"
                   : ""
               }`}
-=======
-        {/* Role switcher for testing */}
-        <RoleSwitcher />
-
-        {/* Profile dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="relative h-10 w-10 rounded-full electron-no-drag touch-target"
->>>>>>> 52b5be12cb1add3e38352bfbd00fc725eee8d6cb
             >
               <Shield className="h-3 w-3" />
               {isDemoMode ? "Demo" : user.role}
