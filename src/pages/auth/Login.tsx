@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Smartphone,
   Eye,
@@ -20,37 +21,116 @@ import {
   Wrench,
   Zap,
   Shield,
+  WifiOff,
+  AlertCircle,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import PWAManager from "@/lib/pwa";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
 
+  useEffect(() => {
+    // Redirect if already authenticated
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    // Monitor online/offline status
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     setIsLoading(true);
-    // Mock login delay
-    setTimeout(() => {
+    setError("");
+
+    try {
+      await login(formData.email, formData.password);
+
+      // Store remember me preference
+      if (formData.rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+      }
+
+      navigate("/", { replace: true });
+    } catch (error: any) {
+      setError(
+        error.response?.data?.message ||
+          "Login failed. Please check your credentials and try again.",
+      );
+    } finally {
       setIsLoading(false);
-      // Redirect to dashboard (UI only)
-      window.location.href = "/";
-    }, 2000);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (error) setError("");
   };
+
+  const handleDemoLogin = async () => {
+    setFormData({
+      email: "admin@expenso.com",
+      password: "admin123",
+      rememberMe: false,
+    });
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-12 lg:py-24 bg-gradient-to-br from-blue-600 to-blue-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
+
+        {/* Offline indicator */}
+        {isOffline && (
+          <div className="absolute top-4 right-4 bg-red-500/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm flex items-center">
+            <WifiOff className="h-4 w-4 mr-2" />
+            Offline Mode
+          </div>
+        )}
+
         <div className="relative z-10 text-white">
           <div className="flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -66,7 +146,7 @@ export default function Login() {
             Streamline your mobile repair business
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-md">
-            Track repairs, manage inventory, handle suppliers, and generate
+            Track repairs, manage customers, handle suppliers, and generate
             detailed reports for your mobile repair shop.
           </p>
 
@@ -81,18 +161,18 @@ export default function Login() {
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Zap className="h-4 w-4 text-white" />
+                <Shield className="h-4 w-4 text-white" />
               </div>
               <span className="text-white/90">
-                Inventory & supplier management
+                Customer & supplier management
               </span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Shield className="h-4 w-4 text-white" />
+                <Zap className="h-4 w-4 text-white" />
               </div>
               <span className="text-white/90">
-                Financial reports & profit analysis
+                Real-time analytics & reports
               </span>
             </div>
           </div>
@@ -100,44 +180,58 @@ export default function Login() {
       </div>
 
       {/* Right side - Login Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          {/* Mobile logo */}
-          <div className="flex items-center justify-center space-x-3 mb-8 lg:hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 w-10 h-10 rounded-xl flex items-center justify-center">
-              <Smartphone className="h-6 w-6 text-white" />
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12">
+        <div className="w-full max-w-md space-y-6">
+          {/* Mobile branding */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Smartphone className="h-8 w-8 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Expenso</h1>
-              <p className="text-xs text-muted-foreground">
-                Mobile Repair Tracker
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold">Welcome to Expenso</h1>
+            <p className="text-muted-foreground">
+              Sign in to manage your repair shop
+            </p>
           </div>
 
-          <Card className="shadow-lg border-0 bg-card/60 backdrop-blur-sm">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">
-                Welcome back
-              </CardTitle>
-              <CardDescription className="text-center">
-                Sign in to your repair management dashboard
+          <Card className="border-0 shadow-2xl">
+            <CardHeader className="space-y-1 text-center lg:text-left">
+              <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+              <CardDescription>
+                Enter your credentials to access your dashboard
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+
+            <form onSubmit={handleSubmit}>
+              <CardContent className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {isOffline && (
+                  <Alert>
+                    <WifiOff className="h-4 w-4" />
+                    <AlertDescription>
+                      You're offline. Some features may be limited.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@repairshop.com"
+                    placeholder="admin@expenso.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
+                    disabled={isLoading}
                     required
-                    className="h-11"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -149,15 +243,16 @@ export default function Login() {
                       onChange={(e) =>
                         handleInputChange("password", e.target.value)
                       }
+                      disabled={isLoading}
                       required
-                      className="h-11 pr-10"
                     />
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-11 w-10"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -177,22 +272,21 @@ export default function Login() {
                         handleInputChange("rememberMe", !!checked)
                       }
                     />
-                    <Label htmlFor="remember" className="text-sm font-normal">
+                    <Label htmlFor="remember" className="text-sm">
                       Remember me
                     </Label>
                   </div>
-                  <Link
-                    to="/auth/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
+                  <Button variant="link" size="sm" asChild className="px-0">
+                    <Link to="/auth/forgot-password">Forgot password?</Link>
+                  </Button>
                 </div>
+              </CardContent>
 
+              <CardFooter className="flex flex-col space-y-4">
                 <Button
                   type="submit"
-                  className="w-full h-11"
-                  disabled={isLoading}
+                  className="w-full"
+                  disabled={isLoading || isOffline}
                 >
                   {isLoading ? (
                     <>
@@ -200,23 +294,34 @@ export default function Login() {
                       Signing in...
                     </>
                   ) : (
-                    "Sign in"
+                    "Sign In"
                   )}
                 </Button>
-              </form>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <div className="text-center text-sm text-muted-foreground">
-                Need help with your account?{" "}
-                <Link
-                  to="/support"
-                  className="text-primary hover:underline font-medium"
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleDemoLogin}
+                  disabled={isLoading}
                 >
-                  Contact Support
-                </Link>
-              </div>
-            </CardFooter>
+                  Use Demo Credentials
+                </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Button variant="link" size="sm" asChild className="px-0">
+                    <Link to="/auth/signup">Sign up</Link>
+                  </Button>
+                </div>
+              </CardFooter>
+            </form>
           </Card>
+
+          {/* PWA Install prompt */}
+          <div className="text-center text-xs text-muted-foreground">
+            <p>💡 Install this app for the best experience</p>
+          </div>
         </div>
       </div>
     </div>
