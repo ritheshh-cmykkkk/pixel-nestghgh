@@ -78,7 +78,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </Alert>
       )}
 
-      <header className="sticky top-0 z-40 flex h-14 sm:h-16 shrink-0 items-center gap-x-3 sm:gap-x-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 sm:px-4 shadow-sm lg:gap-x-6 lg:px-8 safe-area-top electron-drag">
+      <header className="sticky top-0 z-40 flex h-14 sm:h-16 shrink-0 items-center gap-x-3 sm:gap-x-4 border-b-2 border-border bg-background/98 backdrop-blur supports-[backdrop-filter]:bg-background/95 px-3 sm:px-4 shadow-lg lg:gap-x-6 lg:px-8 safe-area-top electron-drag">
         {/* Mobile menu button */}
         <Button
           variant="ghost"
