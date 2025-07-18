@@ -118,18 +118,18 @@ export default function Login() {
   };
 
   const handleDemoAuthentication = async () => {
-    // Create demo user data
+    // Create demo user data based on selected role
     const demoUser = {
-      id: "demo-user-1",
-      email: "admin@expenso.com",
-      name: "Demo Admin",
-      role: "admin" as const,
+      id: `demo-${selectedRole}-1`,
+      email: selectedRole === "admin" ? "admin@demo.com" : "worker@demo.com",
+      name: selectedRole === "admin" ? "Demo Admin" : "Demo Worker",
+      role: selectedRole,
       shop_name: "Demo Repair Shop",
       avatar: null,
     };
 
     const demoAuthData = {
-      token: "demo-token-" + Date.now(),
+      token: `demo-token-${selectedRole}-` + Date.now(),
       user: demoUser,
       expires_in: 86400, // 24 hours
     };
@@ -143,7 +143,7 @@ export default function Login() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Show success message
-    console.log("Demo login successful!");
+    console.log(`Demo login successful as ${selectedRole}!`);
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
