@@ -186,6 +186,28 @@
     @apply border-2 border-border font-semibold;
   }
 
+  /* High contrast chart styling */
+  .chart-high-contrast .recharts-cartesian-grid line {
+    stroke: hsl(var(--border));
+    stroke-width: 1;
+  }
+
+  .chart-high-contrast .recharts-text {
+    fill: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  .chart-high-contrast .recharts-tooltip-wrapper {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  }
+
+  .chart-high-contrast .recharts-tooltip-content {
+    background: hsl(var(--card)) !important;
+    border: 2px solid hsl(var(--border)) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  }
+
   /* Electron app specific styles */
   .electron-drag {
     -webkit-app-region: drag;
