@@ -47,17 +47,45 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (token && storedUser) {
         if (isDemoMode) {
-          // Demo mode - use stored user data without backend verification
-          setUser(storedUser);
+          // Demo mode - completely isolated, use demo data only
+          if (token.startsWith("demo-token")) {
+            setUser({
+              ...storedUser,
+              name: "Demo Admin",
+              email: "admin@demo.com",
+              role: "admin",
+            });
+          } else {
+            // Invalid demo token, clear and redirect
+            localStorage.clear();
+            setUser(null);
+          }
         } else {
-          // Regular mode - verify token with backend
-          const currentUser = await AuthService.getCurrentUser();
-          setUser(currentUser);
+          // Real user mode - verify JWT token with backend
+          if (token.startsWith("demo-token")) {
+            // Demo token found in real mode, clear everything
+            localStorage.clear();
+            setUser(null);
+            return;
+          }
+
+          try {
+            const currentUser = await AuthService.getCurrentUser();
+            setUser(currentUser);
+          } catch (error) {
+            // JWT validation failed, clear auth data
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("user_data");
+            setUser(null);
+          }
         }
       }
     } catch (error) {
-      // Token is invalid, clear stored data
-      await AuthService.logout();
+      console.error("Auth initialization error:", error);
+      // Clear all auth data on any error
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_data");
+      localStorage.removeItem("demo_mode");
       setUser(null);
     } finally {
       setIsLoading(false);

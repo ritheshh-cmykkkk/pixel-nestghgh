@@ -360,12 +360,10 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {user?.name || "Admin"}!
+            Welcome back, {isDemoMode ? "Demo Admin" : user?.name || "Admin"}!
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isDemoMode
-              ? "Explore this demo showcasing your repair shop management capabilities."
-              : "Here's what's happening with your repair shop today."}
+            Here's what's happening with your repair shop today.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -387,17 +385,6 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
-
-      {/* Demo Mode Alert */}
-      {isDemoMode && (
-        <Alert className="border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-200">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Demo Mode:</strong> You're viewing sample data. This
-            showcases the app's features without requiring a backend connection.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Offline Alert */}
       {isOffline && !isDemoMode && (
