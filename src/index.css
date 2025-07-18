@@ -157,9 +157,31 @@
     @apply flex items-center justify-center;
   }
 
-  /* Enhanced focus styles */
+  /* Enhanced high-contrast focus styles */
   .focus-enhanced:focus-visible {
     @apply ring-2 ring-ring ring-offset-2 ring-offset-background outline-none;
+  }
+
+  /* High contrast mode utilities */
+  .contrast-border {
+    @apply border-2 border-border;
+  }
+
+  .contrast-text {
+    @apply text-foreground;
+  }
+
+  .contrast-bg {
+    @apply bg-background;
+  }
+
+  .contrast-card {
+    @apply bg-card border-2 border-border shadow-lg;
+  }
+
+  /* Enhanced button contrast */
+  .btn-high-contrast {
+    @apply border-2 border-border font-semibold;
   }
 
   /* Electron app specific styles */
