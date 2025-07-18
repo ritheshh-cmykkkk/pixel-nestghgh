@@ -106,7 +106,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-2">
-              {navigation.map((item) => (
+              {filteredNavigation.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.href}
@@ -167,7 +167,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-2">
-              {navigation.map((item) => (
+              {filteredNavigation.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.href}
