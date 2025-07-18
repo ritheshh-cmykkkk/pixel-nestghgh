@@ -42,7 +42,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="expenso-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="expenso-theme">
       <AuthProvider>
         <LanguageProvider>
           <ConnectionProvider>
