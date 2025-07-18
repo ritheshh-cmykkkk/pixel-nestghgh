@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectionProvider } from "@/contexts/ConnectionContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 
 // Pages
@@ -34,54 +35,59 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="expenso-theme">
-      <LanguageProvider>
-        <ConnectionProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Authentication routes */}
-                <Route path="/login" element={<Login />} />
+      <AuthProvider>
+        <LanguageProvider>
+          <ConnectionProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Authentication routes */}
+                  <Route path="/login" element={<Login />} />
 
-                {/* Main app routes */}
-                <Route path="/" element={<Dashboard />} />
-                <Route
-                  path="/dashboard"
-                  element={<Navigate to="/" replace />}
-                />
+                  {/* Main app routes */}
+                  <Route path="/" element={<Dashboard />} />
+                  <Route
+                    path="/dashboard"
+                    element={<Navigate to="/" replace />}
+                  />
 
-                {/* Transaction routes */}
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/transactions/new" element={<NewTransaction />} />
-                <Route
-                  path="/transactions/:id/edit"
-                  element={<EditTransaction />}
-                />
+                  {/* Transaction routes */}
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route
+                    path="/transactions/new"
+                    element={<NewTransaction />}
+                  />
+                  <Route
+                    path="/transactions/:id/edit"
+                    element={<EditTransaction />}
+                  />
 
-                {/* Supplier routes */}
-                <Route path="/suppliers" element={<Suppliers />} />
-                <Route path="/suppliers/:id" element={<SupplierDetails />} />
+                  {/* Supplier routes */}
+                  <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/suppliers/:id" element={<SupplierDetails />} />
 
-                {/* Financial routes */}
-                <Route path="/expenditures" element={<Expenditures />} />
+                  {/* Financial routes */}
+                  <Route path="/expenditures" element={<Expenditures />} />
 
-                {/* Bill routes */}
-                <Route path="/bills" element={<Bills />} />
+                  {/* Bill routes */}
+                  <Route path="/bills" element={<Bills />} />
 
-                {/* Report routes */}
-                <Route path="/reports" element={<Reports />} />
+                  {/* Report routes */}
+                  <Route path="/reports" element={<Reports />} />
 
-                {/* Settings routes */}
-                <Route path="/settings" element={<Settings />} />
+                  {/* Settings routes */}
+                  <Route path="/settings" element={<Settings />} />
 
-                {/* Catch-all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ConnectionProvider>
-      </LanguageProvider>
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ConnectionProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
